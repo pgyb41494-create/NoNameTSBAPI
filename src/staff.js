@@ -151,19 +151,19 @@ function mountStaff(app) {
 
   r.post("/message", async (req, res) => {
     try {
-      const { type, guildId, channelId, userId, content } = req.body || {};
-      if (!content || !String(content).trim()) {
-        return res.status(400).json({ error: "Message text is required" });
-      }
+      const { type, guildId, channelId, userId, content, embed, format } = req.body || {};
+      const useEmbed = format === "embed" || (embed && typeof embed === "object");
+      const payload = useEmbed ? { content, embed } : { content };
+
       if (type === "dm") {
         if (!userId) return res.status(400).json({ error: "userId is required" });
-        const sent = await bridge.sendDirectMessage(userId, content);
+        const sent = await bridge.sendDirectMessage(userId, payload);
         return res.json({ ok: true, sent });
       }
       if (!guildId || !channelId) {
         return res.status(400).json({ error: "guildId and channelId are required" });
       }
-      const sent = await bridge.sendChannelMessage(guildId, channelId, content);
+      const sent = await bridge.sendChannelMessage(guildId, channelId, payload);
       return res.json({ ok: true, sent });
     } catch (err) {
       fail(res, err);

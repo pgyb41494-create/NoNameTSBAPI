@@ -136,12 +136,19 @@ function publicMember(member) {
   };
 }
 
-async function sendChannelMessage(guildId, channelId, content) {
+async function sendChannelMessage(guildId, channelId, contentOrPayload, maybeEmbed) {
+  const messageBody =
+    contentOrPayload && typeof contentOrPayload === "object" && !Array.isArray(contentOrPayload)
+      ? contentOrPayload
+      : { content: contentOrPayload, embed: maybeEmbed };
+  const { buildMessagePayload } = require("./lib/messagePayload");
+  const payload = buildMessagePayload(messageBody);
+
   const c = requireClient();
   if (!c) {
     return remoteDiscord(`/discord/guilds/${guildId}/channels/${channelId}/messages`, {
       method: "POST",
-      body: { content },
+      body: payload,
     });
   }
   const channel = await c.channels.fetch(channelId);
@@ -151,20 +158,27 @@ async function sendChannelMessage(guildId, channelId, content) {
   if (guildId && channel.guildId && String(channel.guildId) !== String(guildId)) {
     throw Object.assign(new Error("Channel is not in that server."), { status: 400 });
   }
-  const sent = await channel.send({ content: String(content).slice(0, 2000) });
+  const sent = await channel.send(payload);
   return { id: sent.id, channelId: sent.channelId };
 }
 
-async function sendDirectMessage(userId, content) {
+async function sendDirectMessage(userId, contentOrPayload, maybeEmbed) {
+  const messageBody =
+    contentOrPayload && typeof contentOrPayload === "object" && !Array.isArray(contentOrPayload)
+      ? contentOrPayload
+      : { content: contentOrPayload, embed: maybeEmbed };
+  const { buildMessagePayload } = require("./lib/messagePayload");
+  const payload = buildMessagePayload(messageBody);
+
   const c = requireClient();
   if (!c) {
     return remoteDiscord(`/discord/users/${userId}/messages`, {
       method: "POST",
-      body: { content },
+      body: payload,
     });
   }
   const user = await c.users.fetch(userId);
-  const sent = await user.send({ content: String(content).slice(0, 2000) });
+  const sent = await user.send(payload);
   return { id: sent.id, userId: user.id };
 }
 
