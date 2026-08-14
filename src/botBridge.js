@@ -20,23 +20,38 @@ async function remoteDiscord(pathname, { method = "GET", body } = {}) {
   const base = discordBotApiBase();
   if (!base) {
     const err = new Error(
-      "Discord bot API is unreachable. On the API Railway service set DISCORD_BOT_API=https://nonametsbbot-production.up.railway.app"
+      "Set DISCORD_BOT_API on the API service to your bot URL (https://nonametsbbot-production.up.railway.app)."
     );
     err.status = 503;
     throw err;
   }
-  const res = await fetch(`${base}${pathname}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(apiToken() ? { "x-bot-token": apiToken() } : {}),
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`${base}${pathname}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...(apiToken() ? { "x-bot-token": apiToken() } : {}),
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch (err) {
+    const fail = new Error(
+      `Cannot reach bot at DISCORD_BOT_API (${base}). Bot HTTP returned connection error: ${err.message}`
+    );
+    fail.status = 503;
+    throw fail;
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = new Error(data.error || data.message || `Discord bot-api ${res.status}`);
-    err.status = res.status;
+    const err = new Error(
+      data.error ||
+        data.message ||
+        (res.status === 502
+          ? `Bot HTTP is down (502) at ${base}. Redeploy NoNameTSBBot and confirm /health works.`
+          : `Discord bot-api ${res.status}`)
+    );
+    err.status = res.status === 502 ? 503 : res.status;
     throw err;
   }
   return data;
