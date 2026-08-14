@@ -57,7 +57,7 @@ async function resolveRobloxUser(input) {
   }
 
   const avatarRes = await fetchJson(
-    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${encodeURIComponent(user.id)}&size=150x150&format=Png&isCircular=false`
+    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${encodeURIComponent(user.id)}&size=420x420&format=Png&isCircular=false`
   );
 
   return {
