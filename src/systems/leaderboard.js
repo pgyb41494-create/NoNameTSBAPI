@@ -15,6 +15,8 @@ function defaultConfig(guildId) {
     publicChannelIds: [],
     slotCount: 10,
     cardGifUrl: brand.defaultGif,
+    theme: "classic",
+    componentsV2: false,
     slots: emptySlots(10),
     messageIds: {},
   };
