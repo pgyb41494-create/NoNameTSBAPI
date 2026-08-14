@@ -16,7 +16,16 @@ function websiteUrl() {
 }
 
 function apiPublicUrl() {
-  return (process.env.API_PUBLIC_URL || `http://localhost:${process.env.API_PORT || 8787}`).replace(/\/$/, "");
+  if (process.env.API_PUBLIC_URL) {
+    return process.env.API_PUBLIC_URL.replace(/\/$/, "");
+  }
+  // Railway injects this — avoids localhost OAuth redirects in production
+  const railway = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.RAILWAY_STATIC_URL;
+  if (railway) {
+    const host = String(railway).replace(/^https?:\/\//, "").replace(/\/$/, "");
+    return `https://${host}`;
+  }
+  return `http://localhost:${process.env.PORT || process.env.API_PORT || 8787}`;
 }
 
 function redirectUri() {
