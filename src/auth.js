@@ -7,23 +7,28 @@ const STAFF_IDS = new Set(
     .filter(Boolean)
 );
 
+const DEFAULT_SITE = "https://no-name-tsb-website.vercel.app";
+
 function secret() {
   return process.env.SESSION_SECRET || process.env.API_TOKEN || "asa-staff-session";
 }
 
 function websiteUrl() {
-  return (
-    process.env.WEBSITE_URL ||
-    process.env.FRONTEND_URL ||
-    "https://no-name-tsb-website.vercel.app"
-  ).replace(/\/$/, "");
+  let url = (process.env.WEBSITE_URL || process.env.FRONTEND_URL || DEFAULT_SITE).replace(/\/$/, "");
+  // Never bounce production OAuth back to localhost
+  if (
+    (process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PUBLIC_DOMAIN || process.env.NODE_ENV === "production") &&
+    /localhost|127\.0\.0\.1/i.test(url)
+  ) {
+    return DEFAULT_SITE;
+  }
+  return url || DEFAULT_SITE;
 }
 
 function apiPublicUrl() {
   if (process.env.API_PUBLIC_URL) {
     return process.env.API_PUBLIC_URL.replace(/\/$/, "");
   }
-  // Railway injects this — avoids localhost OAuth redirects in production
   const railway = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.RAILWAY_STATIC_URL;
   if (railway) {
     const host = String(railway).replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -76,9 +81,7 @@ function readCookie(req, name) {
 }
 
 function cookieHeader(token) {
-  const site = websiteUrl();
-  const secure = site.startsWith("https") || apiPublicUrl().startsWith("https");
-  // Cross-site Vercel ↔ Railway needs SameSite=None so /auth/me can read the session
+  const secure = websiteUrl().startsWith("https") || apiPublicUrl().startsWith("https");
   return [
     `asa_session=${encodeURIComponent(token)}`,
     "Path=/",
@@ -99,8 +102,15 @@ function clearCookieHeader() {
   return [`asa_session=; ${base}`, `asa_staff=; ${base}`];
 }
 
+function bearerToken(req) {
+  const header = req.get("authorization") || "";
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : null;
+}
+
 function readSession(req) {
   return (
+    verify(bearerToken(req)) ||
     verify(readCookie(req, "asa_session")) ||
     verify(readCookie(req, "asa_staff"))
   );
@@ -129,7 +139,7 @@ function discordAuthorizeUrl() {
 async function exchangeCode(code) {
   const body = new URLSearchParams({
     client_id: clientId(),
-    client_secret: process.env.DISCORD_CLIENT_SECRET || "",
+    client_secret: process.env.DISCORD_CLIENT_SECRET || process.env.CLIENT_SECRET || "",
     grant_type: "authorization_code",
     code,
     redirect_uri: redirectUri(),
@@ -178,8 +188,8 @@ function mountAuth(app) {
         exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
       });
       res.setHeader("Set-Cookie", cookieHeader(token));
-      // Always land on the site homepage after Discord login
-      return res.redirect(`${site}/?login=ok`);
+      // Obscura-style: hand the session to the homepage via URL (cookies fail cross-site)
+      return res.redirect(`${site}/?login=ok&auth_token=${encodeURIComponent(token)}`);
     } catch (err) {
       console.error("Discord login failed:", err.message);
       return res.redirect(`${site}/?login=error`);
