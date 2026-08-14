@@ -60,13 +60,24 @@ function createApp() {
     });
   });
 
-  app.get("/api/public/:guildId", (req, res) => {
-    res.json(snapshot.publicSnapshot(req.params.guildId));
+  app.get("/api/public/:guildId", async (req, res) => {
+    try {
+      const { enrichNetworkPublic } = require("./lib/enrichPublic");
+      const base = snapshot.publicSnapshot(req.params.guildId);
+      res.json(await enrichNetworkPublic(base));
+    } catch (err) {
+      res.status(err.status || 500).json({ error: err.message || "Failed to load public board" });
+    }
   });
 
   // Network-wide public boards (inviteable multi-server bot — no PUBLIC_GUILD_ID)
-  app.get("/api/public", (_req, res) => {
-    res.json(snapshot.networkPublic());
+  app.get("/api/public", async (_req, res) => {
+    try {
+      const { enrichNetworkPublic } = require("./lib/enrichPublic");
+      res.json(await enrichNetworkPublic(snapshot.networkPublic()));
+    } catch (err) {
+      res.status(err.status || 500).json({ error: err.message || "Failed to load public board" });
+    }
   });
 
   const bot = express.Router();

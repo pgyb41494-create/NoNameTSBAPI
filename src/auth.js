@@ -182,9 +182,10 @@ function mountAuth(app) {
         id: String(user.id),
         username: user.global_name || user.username,
         handle: user.username,
-        avatar: user.avatar
-          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
-          : null,
+        avatar: (() => {
+          const { discordAvatarUrl } = require("./lib/discordUser");
+          return discordAvatarUrl(user.id, user.avatar, 128);
+        })(),
         exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
       });
       res.setHeader("Set-Cookie", cookieHeader(token));

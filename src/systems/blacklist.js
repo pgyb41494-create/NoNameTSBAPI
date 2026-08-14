@@ -30,6 +30,7 @@ function addEntry(guildId, entry) {
           reporterName: entry.reporterName || null,
           addedBy: entry.addedBy || null,
           moderatorName: entry.moderatorName || null,
+          moderatorUsername: entry.moderatorUsername || null,
           moderatorAvatar: entry.moderatorAvatar || null,
           at: entry.at || new Date().toISOString(),
         },

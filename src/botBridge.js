@@ -128,11 +128,12 @@ async function searchMembers(guildId, query = "") {
 }
 
 function publicMember(member) {
+  const { userAvatarFromDiscord } = require("./lib/discordUser");
   return {
     id: member.id,
     username: member.user.username,
     displayName: member.displayName,
-    avatar: member.displayAvatarURL({ size: 64 }),
+    avatar: userAvatarFromDiscord(member.user, 128) || member.displayAvatarURL({ size: 128 }),
   };
 }
 
@@ -185,13 +186,9 @@ async function sendDirectMessage(userId, contentOrPayload, maybeEmbed) {
 async function fetchUser(userId) {
   const c = requireClient();
   if (!c) return remoteDiscord(`/discord/users/${userId}`);
+  const { publicUser } = require("./lib/discordUser");
   const user = await c.users.fetch(userId);
-  return {
-    id: user.id,
-    username: user.username,
-    displayName: user.globalName || user.username,
-    avatar: user.displayAvatarURL({ size: 128 }),
-  };
+  return publicUser(user, 256);
 }
 
 module.exports = {
