@@ -18,6 +18,7 @@ const challenges = require("./systems/challenges");
 const wars = require("./systems/wars");
 const coach = require("./systems/coach");
 const guilds = require("./systems/guilds");
+const { mountAuth, websiteUrl } = require("./auth");
 
 function botAuth(req, res, next) {
   const token = process.env.API_TOKEN;
@@ -29,8 +30,15 @@ function botAuth(req, res, next) {
 
 function createApp() {
   const app = express();
-  app.use(cors());
+  const site = websiteUrl();
+  app.use(
+    cors({
+      origin: [site, "http://localhost:5173", "http://127.0.0.1:5173"],
+      credentials: true,
+    })
+  );
   app.use(express.json({ limit: "25mb" }));
+  mountAuth(app);
 
   app.get("/health", (_req, res) => {
     res.json({ ok: true, name: brand.name });
