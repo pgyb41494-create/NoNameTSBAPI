@@ -1,8 +1,13 @@
 {
   "name": "NoNameBotAPI",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "main": "src/index.js",
+  "files": [
+    "src",
+    "data/.gitkeep",
+    "README.md"
+  ],
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
