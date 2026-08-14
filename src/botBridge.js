@@ -19,7 +19,9 @@ function apiToken() {
 async function remoteDiscord(pathname, { method = "GET", body } = {}) {
   const base = discordBotApiBase();
   if (!base) {
-    const err = new Error("The Discord bot is offline. Start NoNameBot so the dashboard can talk to servers.");
+    const err = new Error(
+      "Discord bot API is unreachable. On the API Railway service set DISCORD_BOT_API=https://nonametsbbot-production.up.railway.app"
+    );
     err.status = 503;
     throw err;
   }
@@ -43,7 +45,9 @@ async function remoteDiscord(pathname, { method = "GET", body } = {}) {
 function requireClient() {
   if (!client?.isReady?.() && !client?.user) {
     if (discordBotApiBase()) return null;
-    const err = new Error("The Discord bot is offline. Start NoNameBot so the dashboard can talk to servers.");
+    const err = new Error(
+      "Discord bot API is unreachable. On the API Railway service set DISCORD_BOT_API=https://nonametsbbot-production.up.railway.app"
+    );
     err.status = 503;
     throw err;
   }
