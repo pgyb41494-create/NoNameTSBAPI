@@ -46,8 +46,12 @@ function createApp() {
     res.json({ ok: true, name: brand.name });
   });
 
-  app.get("/api/public/stats", (_req, res) => {
-    res.json(stats.snapshot());
+  app.get("/api/public/stats", async (_req, res) => {
+    try {
+      res.json(await stats.snapshotAsync());
+    } catch {
+      res.json(stats.snapshot());
+    }
   });
 
   app.get("/api/public/brand", (_req, res) => {
@@ -58,6 +62,29 @@ function createApp() {
       website: brand.website,
       gif: brand.defaultGif,
     });
+  });
+
+  // Proxies Discord avatars (forces .gif for animated) so the website never gets blank PFPs
+  app.get("/api/public/avatar/:userId", async (req, res) => {
+    const { discordAvatarUrl, forceGifIfAnimated } = require("./lib/discordUser");
+    const userId = String(req.params.userId || "").trim();
+    try {
+      const user = await require("./botBridge").fetchUser(userId);
+      let url = forceGifIfAnimated(user?.avatar) || discordAvatarUrl(userId, user?.avatarHash, 256);
+      if (!url) url = discordAvatarUrl(userId, null, 256);
+
+      const img = await fetch(url, { redirect: "follow" });
+      if (!img.ok) {
+        return res.redirect(302, discordAvatarUrl(userId, null, 256));
+      }
+      const type = img.headers.get("content-type") || "image/gif";
+      const buf = Buffer.from(await img.arrayBuffer());
+      res.setHeader("Content-Type", type);
+      res.setHeader("Cache-Control", "public, max-age=600");
+      return res.send(buf);
+    } catch {
+      return res.redirect(302, discordAvatarUrl(userId, null, 256));
+    }
   });
 
   app.get("/api/public/:guildId", async (req, res) => {

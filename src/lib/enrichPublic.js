@@ -17,11 +17,13 @@ async function fetchUsersMap(ids) {
 }
 
 function pickUser(map, id, fallback = {}) {
+  const { forceGifIfAnimated } = require("./discordUser");
   const live = id ? map.get(String(id)) : null;
   return {
     username: live?.username || fallback.username || null,
     displayName: live?.displayName || fallback.displayName || live?.username || fallback.username || null,
-    avatar: live?.avatar || fallback.avatar || null,
+    avatar: forceGifIfAnimated(live?.avatar || fallback.avatar || null),
+    avatarHash: live?.avatarHash || fallback.avatarHash || null,
   };
 }
 

@@ -184,9 +184,13 @@ async function sendDirectMessage(userId, contentOrPayload, maybeEmbed) {
 }
 
 async function fetchUser(userId) {
+  const { publicUser, forceGifIfAnimated } = require("./lib/discordUser");
   const c = requireClient();
-  if (!c) return remoteDiscord(`/discord/users/${userId}`);
-  const { publicUser } = require("./lib/discordUser");
+  if (!c) {
+    const remote = await remoteDiscord(`/discord/users/${userId}`);
+    if (remote?.avatar) remote.avatar = forceGifIfAnimated(remote.avatar);
+    return remote;
+  }
   const user = await c.users.fetch(userId);
   return publicUser(user, 256);
 }
