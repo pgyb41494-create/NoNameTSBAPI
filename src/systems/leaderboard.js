@@ -17,6 +17,7 @@ function defaultConfig(guildId) {
     cardGifUrl: brand.defaultGif,
     theme: "classic",
     componentsV2: false,
+    tipsMessageId: null,
     slots: emptySlots(10),
     messageIds: {},
   };

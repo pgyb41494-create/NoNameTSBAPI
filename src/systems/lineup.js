@@ -28,6 +28,7 @@ function defaultConfig(guildId) {
     guildId,
     setupCompleted: false,
     managementChannelId: null,
+    tipsMessageId: null,
     cardGifUrl: brand.defaultGif,
     regions,
   };
