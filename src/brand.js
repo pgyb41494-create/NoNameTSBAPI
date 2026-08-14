@@ -1,5 +1,5 @@
 const brand = {
-  name: process.env.BOT_NAME || "ASA",
+  name: process.env.BOT_NAME || "Ascendant",
   prefix: process.env.BOT_PREFIX || "'",
   color: parseInt(String(process.env.BOT_COLOR || "2B2D31"), 16) || 0x2b2d31,
   accent: 0x7c9cff,

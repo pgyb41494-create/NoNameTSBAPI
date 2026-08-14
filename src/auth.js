@@ -10,7 +10,7 @@ const STAFF_IDS = new Set(
 const DEFAULT_SITE = "https://no-name-tsb-website.vercel.app";
 
 function secret() {
-  return process.env.SESSION_SECRET || process.env.API_TOKEN || "asa-staff-session";
+  return process.env.SESSION_SECRET || process.env.API_TOKEN || "ascendant-staff-session";
 }
 
 function websiteUrl() {
@@ -83,7 +83,7 @@ function readCookie(req, name) {
 function cookieHeader(token) {
   const secure = websiteUrl().startsWith("https") || apiPublicUrl().startsWith("https");
   return [
-    `asa_session=${encodeURIComponent(token)}`,
+    `asc_session=${encodeURIComponent(token)}`,
     "Path=/",
     "HttpOnly",
     secure ? "SameSite=None" : "SameSite=Lax",
@@ -99,7 +99,7 @@ function clearCookieHeader() {
   const base = secure
     ? "Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0"
     : "Path=/; HttpOnly; SameSite=Lax; Max-Age=0";
-  return [`asa_session=; ${base}`, `asa_staff=; ${base}`];
+  return [`asc_session=; ${base}`, `asc_staff=; ${base}`];
 }
 
 function bearerToken(req) {
@@ -111,8 +111,8 @@ function bearerToken(req) {
 function readSession(req) {
   return (
     verify(bearerToken(req)) ||
-    verify(readCookie(req, "asa_session")) ||
-    verify(readCookie(req, "asa_staff"))
+    verify(readCookie(req, "asc_session")) ||
+    verify(readCookie(req, "asc_staff"))
   );
 }
 
