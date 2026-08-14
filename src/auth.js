@@ -12,7 +12,11 @@ function secret() {
 }
 
 function websiteUrl() {
-  return (process.env.WEBSITE_URL || "http://localhost:5173").replace(/\/$/, "");
+  return (
+    process.env.WEBSITE_URL ||
+    process.env.FRONTEND_URL ||
+    "https://no-name-tsb-website.vercel.app"
+  ).replace(/\/$/, "");
 }
 
 function apiPublicUrl() {
@@ -72,12 +76,14 @@ function readCookie(req, name) {
 }
 
 function cookieHeader(token) {
-  const secure = websiteUrl().startsWith("https");
+  const site = websiteUrl();
+  const secure = site.startsWith("https") || apiPublicUrl().startsWith("https");
+  // Cross-site Vercel ↔ Railway needs SameSite=None so /auth/me can read the session
   return [
     `asa_session=${encodeURIComponent(token)}`,
     "Path=/",
     "HttpOnly",
-    "SameSite=Lax",
+    secure ? "SameSite=None" : "SameSite=Lax",
     `Max-Age=${60 * 60 * 24 * 7}`,
     secure ? "Secure" : "",
   ]
@@ -86,10 +92,11 @@ function cookieHeader(token) {
 }
 
 function clearCookieHeader() {
-  return [
-    "asa_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
-    "asa_staff=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
-  ];
+  const secure = websiteUrl().startsWith("https") || apiPublicUrl().startsWith("https");
+  const base = secure
+    ? "Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0"
+    : "Path=/; HttpOnly; SameSite=Lax; Max-Age=0";
+  return [`asa_session=; ${base}`, `asa_staff=; ${base}`];
 }
 
 function readSession(req) {
@@ -171,6 +178,7 @@ function mountAuth(app) {
         exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
       });
       res.setHeader("Set-Cookie", cookieHeader(token));
+      // Always land on the site homepage after Discord login
       return res.redirect(`${site}/?login=ok`);
     } catch (err) {
       console.error("Discord login failed:", err.message);
