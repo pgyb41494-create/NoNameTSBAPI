@@ -18,6 +18,7 @@ module.exports = {
   challenges: require("./systems/challenges"),
   wars: require("./systems/wars"),
   snapshot: require("./systems/snapshot"),
+  botBridge: require("./botBridge"),
   coach: require("./systems/coach"),
   cards: require("./lib/cards"),
   roblox: require("./lib/roblox"),

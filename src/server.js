@@ -19,6 +19,7 @@ const wars = require("./systems/wars");
 const coach = require("./systems/coach");
 const guilds = require("./systems/guilds");
 const { mountAuth, websiteUrl } = require("./auth");
+const { mountStaff } = require("./staff");
 
 function botAuth(req, res, next) {
   const token = process.env.API_TOKEN;
@@ -39,6 +40,7 @@ function createApp() {
   );
   app.use(express.json({ limit: "25mb" }));
   mountAuth(app);
+  mountStaff(app);
 
   app.get("/health", (_req, res) => {
     res.json({ ok: true, name: brand.name });
