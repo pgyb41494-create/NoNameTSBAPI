@@ -60,4 +60,24 @@ function isBlacklisted(guildId, discordId) {
   return getList(guildId).entries.some((e) => String(e.discordId) === String(discordId));
 }
 
-module.exports = { getList, addEntry, removeEntry, isBlacklisted };
+/** All entries across every server (public network blacklist). */
+function listAll() {
+  const db = store.load();
+  const rows = [];
+  for (const [guildId, bucket] of Object.entries(db)) {
+    for (const entry of bucket?.entries || []) {
+      rows.push({ ...entry, guildId: entry.guildId || guildId });
+    }
+  }
+  rows.sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")));
+  // Prefer newest row per Discord user for the public network view
+  const seen = new Set();
+  return rows.filter((row) => {
+    const id = String(row.discordId);
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+}
+
+module.exports = { getList, addEntry, removeEntry, isBlacklisted, listAll };

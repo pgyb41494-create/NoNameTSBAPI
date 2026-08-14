@@ -75,4 +75,19 @@ function publicSnapshot(guildId) {
   };
 }
 
-module.exports = { playerBundle, cardsFromSlots, publicSnapshot };
+/** Site-wide boards for a public multi-server bot (no single PUBLIC_GUILD_ID). */
+function networkPublic() {
+  return {
+    guildId: null,
+    scope: "network",
+    brand: { name: brand.name, tagline: brand.tagline, gif: brand.defaultGif },
+    leaderboard: { setupCompleted: false, gif: brand.defaultGif, cards: [] },
+    lineup: { setupCompleted: false, gif: brand.defaultGif, regions: [] },
+    blacklist: blacklist.listAll(),
+    trainers: trainers.listAll(),
+    wars: wars.listAll(),
+    demo: false,
+  };
+}
+
+module.exports = { playerBundle, cardsFromSlots, publicSnapshot, networkPublic };

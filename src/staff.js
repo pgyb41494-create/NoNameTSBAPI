@@ -27,16 +27,11 @@ function fail(res, err) {
   return res.status(status).json({ error: err.message || "Request failed" });
 }
 
-async function defaultGuildId() {
-  if (process.env.PUBLIC_GUILD_ID) return process.env.PUBLIC_GUILD_ID;
-  const stored = guilds.listGuilds()[0]?.guildId;
-  if (stored) return stored;
-  try {
-    const live = await bridge.listGuildsAsync();
-    return live?.[0]?.id || null;
-  } catch {
-    return null;
-  }
+/** Prefer the guild the staff picked in the dashboard; fall back to network scope. */
+function resolveStaffGuildId(bodyGuildId) {
+  const picked = String(bodyGuildId || "").trim();
+  if (picked) return picked;
+  return "network";
 }
 
 async function enrichUser(id) {
@@ -108,8 +103,7 @@ function mountStaff(app) {
       if (!report) return res.status(404).json({ error: "Report not found" });
       if (report.status !== "pending") return res.status(400).json({ error: "Report already reviewed" });
 
-      const guildId = req.body.guildId || (await defaultGuildId());
-      if (!guildId) return res.status(400).json({ error: "No guild configured. Set PUBLIC_GUILD_ID or invite the bot." });
+      const guildId = resolveStaffGuildId(req.body?.guildId);
 
       const player = await enrichUser(report.reportedId);
       const mod = await enrichUser(req.staff.id);

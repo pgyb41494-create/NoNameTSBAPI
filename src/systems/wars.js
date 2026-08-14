@@ -32,4 +32,17 @@ function addWar(guildId, war) {
   return next;
 }
 
-module.exports = { getWars, addWar };
+/** All wars across every server (public network feed). */
+function listAll() {
+  const db = store.load();
+  const rows = [];
+  for (const [guildId, bucket] of Object.entries(db)) {
+    for (const war of bucket?.wars || []) {
+      rows.push({ ...war, guildId: war.guildId || guildId });
+    }
+  }
+  rows.sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")));
+  return rows;
+}
+
+module.exports = { getWars, addWar, listAll };

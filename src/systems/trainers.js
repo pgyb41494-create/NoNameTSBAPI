@@ -51,4 +51,23 @@ function remove(guildId, discordId) {
   return next;
 }
 
-module.exports = { getList, upsert, remove };
+/** All trainers across every server (public network directory). */
+function listAll() {
+  const db = store.load();
+  const rows = [];
+  for (const [guildId, bucket] of Object.entries(db)) {
+    for (const trainer of bucket?.trainers || []) {
+      rows.push({ ...trainer, guildId: trainer.guildId || guildId });
+    }
+  }
+  rows.sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")));
+  const seen = new Set();
+  return rows.filter((row) => {
+    const id = String(row.discordId);
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+}
+
+module.exports = { getList, upsert, remove, listAll };
