@@ -8,8 +8,41 @@ function getClient() {
   return client;
 }
 
+function discordBotApiBase() {
+  return String(process.env.DISCORD_BOT_API || "").replace(/\/$/, "");
+}
+
+function apiToken() {
+  return process.env.API_TOKEN || process.env.BOT_API_TOKEN || "";
+}
+
+async function remoteDiscord(pathname, { method = "GET", body } = {}) {
+  const base = discordBotApiBase();
+  if (!base) {
+    const err = new Error("The Discord bot is offline. Start NoNameBot so the dashboard can talk to servers.");
+    err.status = 503;
+    throw err;
+  }
+  const res = await fetch(`${base}${pathname}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(apiToken() ? { "x-bot-token": apiToken() } : {}),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || data.message || `Discord bot-api ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
 function requireClient() {
   if (!client?.isReady?.() && !client?.user) {
+    if (discordBotApiBase()) return null;
     const err = new Error("The Discord bot is offline. Start NoNameBot so the dashboard can talk to servers.");
     err.status = 503;
     throw err;
@@ -19,6 +52,10 @@ function requireClient() {
 
 function listGuilds() {
   const c = requireClient();
+  if (!c) {
+    // sync callers exist — prefer local; remote is async via listGuildsAsync
+    throw Object.assign(new Error("Use listGuildsAsync when Discord runs on a separate bot-api."), { status: 503 });
+  }
   return [...c.guilds.cache.values()]
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((g) => ({
@@ -29,8 +66,15 @@ function listGuilds() {
     }));
 }
 
+async function listGuildsAsync() {
+  const c = requireClient();
+  if (c) return listGuilds();
+  return remoteDiscord("/discord/guilds");
+}
+
 async function listChannels(guildId) {
   const c = requireClient();
+  if (!c) return remoteDiscord(`/discord/guilds/${guildId}/channels`);
   const guild = await c.guilds.fetch(guildId);
   const channels = await guild.channels.fetch();
   return [...channels.values()]
@@ -45,6 +89,10 @@ async function listChannels(guildId) {
 
 async function searchMembers(guildId, query = "") {
   const c = requireClient();
+  if (!c) {
+    const q = encodeURIComponent(String(query || ""));
+    return remoteDiscord(`/discord/guilds/${guildId}/members?q=${q}`);
+  }
   const guild = await c.guilds.fetch(guildId);
   const q = String(query || "").trim();
   if (q) {
@@ -71,6 +119,12 @@ function publicMember(member) {
 
 async function sendChannelMessage(guildId, channelId, content) {
   const c = requireClient();
+  if (!c) {
+    return remoteDiscord(`/discord/guilds/${guildId}/channels/${channelId}/messages`, {
+      method: "POST",
+      body: { content },
+    });
+  }
   const channel = await c.channels.fetch(channelId);
   if (!channel || !channel.isTextBased?.()) {
     throw Object.assign(new Error("That channel cannot receive messages."), { status: 400 });
@@ -84,6 +138,12 @@ async function sendChannelMessage(guildId, channelId, content) {
 
 async function sendDirectMessage(userId, content) {
   const c = requireClient();
+  if (!c) {
+    return remoteDiscord(`/discord/users/${userId}/messages`, {
+      method: "POST",
+      body: { content },
+    });
+  }
   const user = await c.users.fetch(userId);
   const sent = await user.send({ content: String(content).slice(0, 2000) });
   return { id: sent.id, userId: user.id };
@@ -91,6 +151,7 @@ async function sendDirectMessage(userId, content) {
 
 async function fetchUser(userId) {
   const c = requireClient();
+  if (!c) return remoteDiscord(`/discord/users/${userId}`);
   const user = await c.users.fetch(userId);
   return {
     id: user.id,
@@ -104,6 +165,7 @@ module.exports = {
   setClient,
   getClient,
   listGuilds,
+  listGuildsAsync,
   listChannels,
   searchMembers,
   fetchUser,

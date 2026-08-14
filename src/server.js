@@ -157,7 +157,7 @@ function createApp() {
 
 function startServer() {
   const app = createApp();
-  const port = Number(process.env.API_PORT || 8787);
+  const port = Number(process.env.PORT || process.env.API_PORT || 8787);
   const host = process.env.API_HOST || "0.0.0.0";
   return app.listen(port, host, () => {
     console.log(`${brand.name} API listening on http://${host}:${port}`);

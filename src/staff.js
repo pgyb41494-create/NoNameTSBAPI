@@ -27,12 +27,13 @@ function fail(res, err) {
   return res.status(status).json({ error: err.message || "Request failed" });
 }
 
-function defaultGuildId() {
+async function defaultGuildId() {
   if (process.env.PUBLIC_GUILD_ID) return process.env.PUBLIC_GUILD_ID;
   const stored = guilds.listGuilds()[0]?.guildId;
   if (stored) return stored;
   try {
-    return bridge.listGuilds()?.[0]?.id || null;
+    const live = await bridge.listGuildsAsync();
+    return live?.[0]?.id || null;
   } catch {
     return null;
   }
@@ -89,9 +90,9 @@ function mountStaff(app) {
   const r = express.Router();
   r.use(staffAuth);
 
-  r.get("/guilds", (_req, res) => {
+  r.get("/guilds", async (_req, res) => {
     try {
-      res.json({ guilds: bridge.listGuilds() });
+      res.json({ guilds: await bridge.listGuildsAsync() });
     } catch (err) {
       fail(res, err);
     }
@@ -107,7 +108,7 @@ function mountStaff(app) {
       if (!report) return res.status(404).json({ error: "Report not found" });
       if (report.status !== "pending") return res.status(400).json({ error: "Report already reviewed" });
 
-      const guildId = req.body.guildId || defaultGuildId();
+      const guildId = req.body.guildId || (await defaultGuildId());
       if (!guildId) return res.status(400).json({ error: "No guild configured. Set PUBLIC_GUILD_ID or invite the bot." });
 
       const player = await enrichUser(report.reportedId);
