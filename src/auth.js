@@ -47,7 +47,6 @@ function verify(token) {
   try {
     const data = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
     if (data.exp && Date.now() > data.exp) return null;
-    if (!isStaff(data.id)) return null;
     return data;
   } catch {
     return null;
@@ -66,7 +65,7 @@ function readCookie(req, name) {
 function cookieHeader(token) {
   const secure = websiteUrl().startsWith("https");
   return [
-    `asa_staff=${encodeURIComponent(token)}`,
+    `asa_session=${encodeURIComponent(token)}`,
     "Path=/",
     "HttpOnly",
     "SameSite=Lax",
@@ -78,11 +77,27 @@ function cookieHeader(token) {
 }
 
 function clearCookieHeader() {
-  return "asa_staff=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0";
+  return [
+    "asa_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
+    "asa_staff=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
+  ];
 }
 
 function readSession(req) {
-  return verify(readCookie(req, "asa_staff"));
+  return (
+    verify(readCookie(req, "asa_session")) ||
+    verify(readCookie(req, "asa_staff"))
+  );
+}
+
+function publicUser(session) {
+  if (!session) return null;
+  return {
+    id: session.id,
+    username: session.username,
+    avatar: session.avatar,
+    staff: isStaff(session.id),
+  };
 }
 
 function discordAuthorizeUrl() {
@@ -137,14 +152,12 @@ function mountAuth(app) {
       if (!code) return res.redirect(`${site}/?login=denied`);
       const tokens = await exchangeCode(String(code));
       const user = await fetchDiscordUser(tokens.access_token);
-      if (!isStaff(user.id)) {
-        return res.redirect(`${site}/?login=denied`);
-      }
       const token = sign({
         id: String(user.id),
         username: user.global_name || user.username,
+        handle: user.username,
         avatar: user.avatar
-          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
+          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
           : null,
         exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
       });
@@ -159,13 +172,7 @@ function mountAuth(app) {
   app.get("/auth/me", (req, res) => {
     const user = readSession(req);
     if (!user) return res.status(401).json({ user: null });
-    res.json({
-      user: {
-        id: user.id,
-        username: user.username,
-        avatar: user.avatar,
-      },
-    });
+    res.json({ user: publicUser(user) });
   });
 
   app.post("/auth/logout", (_req, res) => {
@@ -178,6 +185,7 @@ module.exports = {
   mountAuth,
   readSession,
   isStaff,
+  publicUser,
   websiteUrl,
   STAFF_IDS,
 };

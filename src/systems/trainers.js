@@ -17,9 +17,13 @@ function upsert(guildId, trainer) {
       trainers: [
         {
           discordId: String(trainer.discordId),
+          username: trainer.username || null,
+          displayName: trainer.displayName || null,
+          avatar: trainer.avatar || null,
+          stage: trainer.stage || "Unranked",
+          price: trainer.price || "TBD",
+          specialty: trainer.specialty || trainer.stage || "General",
           role: trainer.role || "Trainer",
-          specialty: trainer.specialty || "General",
-          region: trainer.region || null,
           bio: trainer.bio || "",
           addedBy: trainer.addedBy || null,
           at: new Date().toISOString(),

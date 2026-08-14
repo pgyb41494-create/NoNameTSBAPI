@@ -70,10 +70,7 @@ function publicSnapshot(guildId) {
       regions: lineupBoards,
     },
     blacklist: bl.entries || [],
-    trainers: (tr.trainers || []).map((t) => ({
-      ...t,
-      profile: profiles.publicProfile(profiles.getProfile(guildId, t.discordId)),
-    })),
+    trainers: tr.trainers || [],
     wars: w.wars || [],
   };
 }

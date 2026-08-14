@@ -89,12 +89,24 @@ async function sendDirectMessage(userId, content) {
   return { id: sent.id, userId: user.id };
 }
 
+async function fetchUser(userId) {
+  const c = requireClient();
+  const user = await c.users.fetch(userId);
+  return {
+    id: user.id,
+    username: user.username,
+    displayName: user.globalName || user.username,
+    avatar: user.displayAvatarURL({ size: 128 }),
+  };
+}
+
 module.exports = {
   setClient,
   getClient,
   listGuilds,
   listChannels,
   searchMembers,
+  fetchUser,
   sendChannelMessage,
   sendDirectMessage,
 };
