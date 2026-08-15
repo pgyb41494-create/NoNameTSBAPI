@@ -6,10 +6,10 @@ const { tsblPromptBlock } = require("./tsblRules");
  * Source clips / pro vods + TSBL competitive rules folded in.
  */
 const KNOWLEDGE = {
-  version: 7,
+  version: 8,
   game: "The Strongest Battlegrounds",
   notes:
-    "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Apply TSBL competitive rules when the clip looks like a ranked/tryout/1v1. In 1v1 competitive, do NOT use or recommend ultimate / Serious Mode / Rampage (G). Be specific about what you see.",
+    "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Apply TSBL competitive rules when the clip looks like ranked, tryout, 1v1, or clan glads. In 1v1 competitive, do NOT use or recommend ultimate / Serious Mode / Rampage (G). Be specific about what you see.",
   referenceVods: [
     {
       id: "pcBVerfhZ6c",
@@ -92,6 +92,15 @@ const KNOWLEDGE = {
     "If you're ahead in the set, play cleaner neutral — don't gift free rounds.",
     "Watch who takes first hit repeatedly. High-level sets are often decided by opening neutral.",
   ],
+  leagueOps: [
+    "Clan register: min 40 members; lineup for Miami FL AND São Paulo BR; name ≤20 chars and not inappropriate; register in General Support.",
+    "Update clan name/tag/leader if already on LB: >clan your_clan_name → Manage Clan.",
+    "Glads eligibility: ≥1 week in clan + official clan tag (or official roster if the clan has no tag). Clanless banned. Alts banned unless officially approved. Allies in the lineup banned.",
+    "Glads ping: unstable or >150ms cannot play.",
+    "Glads format: 3v3 min to 7v7 max. Leaders pick FT3–FT7 if both sides agree. Cross-region = FT3 mandatory in each region.",
+    "Autowin strikes: unjustified autowin from (1) missing the 15-minute show-up window, (2) failing participation requirements, (3) scripts / Clumsy / illegal bootstrapper.",
+    "3/3 autowin strikes = removed from leaderboard + 1 month competitive suspension. 1–2/3 resets after 2 valid glads.",
+  ],
   vodChecklist: [
     "Did the player take first hit or lose neutral repeatedly?",
     "Are they mashing on block or after a missed skill?",
@@ -104,12 +113,13 @@ const KNOWLEDGE = {
     "Passive for 12s+ without aggressive dash?",
     "Do they tilt after losing a round?",
     "Legal character for competitive (Saitama / Garou / Metal Bat) if this looks ranked?",
+    "If this looks like a glad: clan tag/roster, ping issues, 3v3–7v7, illegal bootstrapper/scripts?",
   ],
   outputFormat: [
     "First line MUST be exactly: verified=true  OR  verified=false",
     "If verified=false: say why (wrong nametag / can't see name / wrong avatar) and stop — no full coach review.",
     "If verified=true: 3–6 concrete mistakes (mention what you saw on screen)",
-    "Call out TSBL rule breaks if visible (running, passive, illegal macros/tech, using G/ultimate in 1v1)",
+    "Call out TSBL rule breaks if visible (running, passive, illegal macros/tech, G/ultimate in 1v1, glad autowin causes)",
     "What to drill next session (short, specific)",
     "One thing they already do well",
   ],
@@ -137,6 +147,11 @@ function knowledgePrompt() {
     "",
     "Pro / stage lessons:",
     ...KNOWLEDGE.proLessons.map((l) => `- ${l}`),
+    "",
+    "TSBL clan / glads / autowin (memorize — this is official):",
+    ...KNOWLEDGE.leagueOps.map((l) => `- ${l}`),
+    "",
+    tsblPromptBlock("es"),
     "",
     tsblPromptBlock("en"),
     "",

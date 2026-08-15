@@ -99,6 +99,7 @@ const ES = {
     "Si stallan o side-dashean lejos rato, cita Running / Passive Strike.",
     "En tryouts FT3/FT5, prioriza compostura y conversión, no solo movimiento flashy.",
     "En 1v1: si pulsan G (Modo Serio / Rampage / ultimate), márcalo como error — solo kit base.",
+    "En glads: tag/roster, no clanless/alts/aliados, ping ≤150ms. Autowin injustificado (15 min, participación, scripts/Clumsy/bootstrapper ilegal) = strike.",
   ],
   ui: {
     pick: "Elige una sección",
@@ -200,6 +201,7 @@ const EN = {
     "If they stall or side-dash away for long stretches, cite Running / Passive Strike.",
     "For tryout FT3/FT5 clips, judge composure and conversion — not only flashy movement.",
     "In 1v1 reviews: if they press G (Serious Mode / Rampage / ultimate), call it out — base kit only.",
+    "On glad clips: tag/roster, no clanless/alts/allies, ping ≤150ms. Unjustified autowin (15 min, participation, scripts/Clumsy/illegal bootstrapper) = strike.",
   ],
   ui: {
     pick: "Pick a rules section",
