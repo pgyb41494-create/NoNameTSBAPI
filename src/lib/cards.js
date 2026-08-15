@@ -104,7 +104,7 @@ function formatCardDescription(card, { mode = "leaderboard" } = {}) {
   if (mode === "lineup") return lines.join("\n");
 
   return [
-    `-# ID: ${card.id != null ? card.id : "—"}`,
+    `-# Code: ${card.id != null ? card.id : "—"}`,
     ...lines,
     `-# Status: ${card.status}`,
     `-# wins: ${card.wins} losses: ${card.losses}`,

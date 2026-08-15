@@ -3,7 +3,12 @@ const { resolveRobloxUser, checkRobloxBio } = require("../lib/roblox");
 const { getCharacterLabel } = require("../lib/characters");
 const { regionLabel } = require("../lib/regions");
 
-const store = createJsonStore("profiles.json", { nextId: 100, users: {} });
+const store = createJsonStore("profiles.json", { nextId: 100, nextCodeIndex: 0, users: {} });
+
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const BLOCKED = new Set([
+  "ASS", "FUK", "FUC", "FAG", "NIG", "SEX", "TIT", "KKK", "CUM", "DIE", "GAY", "STD", "PUS",
+]);
 
 function keyFor(guildId, discordId) {
   return `${guildId || "global"}:${discordId}`;
@@ -30,13 +35,79 @@ function emptyProfile(discordId, guildId) {
   };
 }
 
-function allProfiles() {
+function isLetterCode(value) {
+  return /^[A-Z]{3}$/.test(String(value || "").toUpperCase());
+}
+
+function indexToCode(n) {
+  let x = Math.max(0, Number(n) || 0);
+  let out = "";
+  for (let i = 0; i < 3; i++) {
+    out = LETTERS[x % 26] + out;
+    x = Math.floor(x / 26);
+  }
+  return out;
+}
+
+function usedCodes(db) {
+  const set = new Set();
+  for (const p of Object.values(db.users || {})) {
+    const c = String(p.profile_id || "").toUpperCase();
+    if (isLetterCode(c)) set.add(c);
+  }
+  return set;
+}
+
+function nextCode(db) {
+  const used = usedCodes(db);
+  let i = Number(db.nextCodeIndex || 0);
+  for (let n = 0; n < 26 ** 3 + 2; n++) {
+    const code = indexToCode(i);
+    i += 1;
+    if (BLOCKED.has(code) || used.has(code)) continue;
+    db.nextCodeIndex = i;
+    return code;
+  }
+  throw new Error("No profile codes left.");
+}
+
+function ensureLetterCode(db, profile) {
+  if (isLetterCode(profile.profile_id)) {
+    profile.profile_id = String(profile.profile_id).toUpperCase();
+    return profile.profile_id;
+  }
+  profile.profile_id = nextCode(db);
+  return profile.profile_id;
+}
+
+function migrateCodes(db) {
+  if (!db.users) db.users = {};
+  if (db.nextCodeIndex == null) db.nextCodeIndex = 0;
+  for (const profile of Object.values(db.users)) {
+    ensureLetterCode(db, profile);
+  }
+  return db;
+}
+
+function needsMigrate(db) {
+  for (const profile of Object.values(db.users || {})) {
+    if (!isLetterCode(profile.profile_id)) return true;
+  }
+  return false;
+}
+
+function loadMigrated() {
   const db = store.load();
-  return Object.values(db.users || {});
+  if (!needsMigrate(db)) return db;
+  return store.updateSync(migrateCodes);
+}
+
+function allProfiles() {
+  return Object.values(loadMigrated().users || {});
 }
 
 function getProfile(guildId, discordId) {
-  const db = store.load();
+  const db = loadMigrated();
   return (
     db.users[keyFor(guildId, discordId)] ||
     db.users[keyFor("global", discordId)] ||
@@ -48,28 +119,27 @@ function findByRoblox(guildId, query) {
   const q = String(query || "").trim().toLowerCase();
   if (!q) return null;
   const list = allProfiles().filter((p) => !guildId || p.guild_id === guildId || !p.guild_id);
+  const code = q.replace(/[^a-z0-9]/gi, "").toUpperCase();
   return (
+    (isLetterCode(code) && list.find((p) => String(p.profile_id || "").toUpperCase() === code)) ||
     list.find((p) => String(p.roblox_username || "").toLowerCase() === q) ||
     list.find((p) => String(p.roblox_display_name || "").toLowerCase() === q) ||
     list.find((p) => String(p.roblox_id || "") === q) ||
-    list.find((p) => String(p.profile_id || "") === q)
+    list.find((p) => String(p.profile_id || "").toLowerCase() === q)
   );
 }
 
 function saveProfile(guildId, discordId, updates) {
   let saved = null;
   store.updateSync((db) => {
-    if (!db.users) db.users = {};
-    if (!db.nextId) db.nextId = 100;
+    migrateCodes(db);
     const key = keyFor(guildId, discordId);
     const current = db.users[key] || emptyProfile(discordId, guildId);
-    if (!current.profile_id) {
-      current.profile_id = db.nextId;
-      db.nextId += 1;
-    }
+    ensureLetterCode(db, current);
     saved = {
       ...current,
       ...updates,
+      profile_id: current.profile_id,
       discord_id: String(discordId),
       guild_id: guildId || current.guild_id,
       updated_at: new Date().toISOString(),
@@ -118,4 +188,5 @@ module.exports = {
   publicProfile,
   resolveRobloxUser,
   checkRobloxBio,
+  isLetterCode,
 };
