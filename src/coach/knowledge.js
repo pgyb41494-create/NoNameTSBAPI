@@ -6,7 +6,7 @@ const { tsblPromptBlock } = require("./tsblRules");
  * Source clips / pro vods + TSBL competitive rules folded in.
  */
 const KNOWLEDGE = {
-  version: 5,
+  version: 6,
   game: "The Strongest Battlegrounds",
   notes:
     "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Apply TSBL competitive rules when the clip looks like a ranked/tryout/1v1. Be specific about what you see.",
@@ -42,6 +42,19 @@ const KNOWLEDGE = {
         "Keep M1 click timing tight so there are no gaps for side-dash escape mid-string.",
       ],
     },
+    {
+      id: "medal-2026-08-11",
+      summary:
+        "~21m Medal VOD (sampled). English HUD private-server sets vs Shycray_DAT: Saitama Shove/M1/downslam into Garou RAMPAGE, Lethal Whirlwind Stream confirm.",
+      lessons: [
+        "Saitama: cancel 3rd M1 into Shove (Empujar) to extend / break before 4th-M1 knockback ends the string.",
+        "After a jump-M1 downslam knockdown, activate Serious Mode or Garou Rampage on get-up to deny free escape.",
+        "Garou Rampage kit labels (EN): Flowing Water, Lethal Whirlwind Stream, Hunter's Grasp, Prey's Peril.",
+        "Rampage: forward-dash immediately after awaken to stay glued, then Lethal Whirlwind Stream while they are recovering.",
+        "Angle camera slightly down on the last M1 of a string to land consistent downslams.",
+        "If opponent already spent ragdoll/evasive, commit multi-hit enders (Consecutive Punches / Lethal Whirlwind) instead of soft pressure.",
+      ],
+    },
   ],
   visionCues: [
     "Confirm identity from the nametag above the character (Roblox username), not only Discord.",
@@ -59,7 +72,7 @@ const KNOWLEDGE = {
     "Block first when you do not have a confirmed read. Perfect block / well-timed block wins more sets than greedy counters.",
     "Track awakening / Serious Mode. Dumping awake into a lost neutral is a throw. Save it for a confirmed kill or comeback.",
     "If opponent is already low and confirmed in an M1 string, finish with kit (e.g. Golpes sucesivos) — do not ego-pop awake.",
-    "After a knockdown, take space or meaty — do not dash in raw if they have a wake-up option.",
+    "After a knockdown, take space or meaty — do not dash in raw if they have a wake-up option. If you have awake ready, activating on get-up is often stronger than giving free reset space.",
     "Stamina / end-lag management: if a move is minus, stop mashing. Walk back and wait for the whiff.",
     "Do not spam the same starter. Mix M1, grab/throw pressure, and a delayed dash.",
     "When you win a stock, reset. Do not ego-dash into their awake.",
@@ -67,8 +80,9 @@ const KNOWLEDGE = {
     "When chasing a runner: predict their next dash destination and cut the angle instead of trailing behind.",
   ],
   characterRoutes: [
-    "Saitama (The Strongest Hero): common confirm is M1 string into Golpes sucesivos. Empujar / Corte superior are mix / approach tools — don't random them mid-confirm.",
-    "Garou (Hero Hunter) / Metal Bat (Brutal Demon): still judge the same fundamentals (neutral, dash discipline, awake value) even when kit names differ.",
+    "Saitama (The Strongest Hero): common confirms are M1 → Golpes sucesivos / Consecutive Punches, or M1 → Shove (Empujar) extension before 4th-M1 knockback. Uppercut / Corte superior is mix / anti-air — don't random mid-confirm.",
+    "Garou (Hero Hunter) Rampage: after knockdown awaken, dash-catch then Lethal Whirlwind Stream while they recover. Track Flowing Water / Hunter's Grasp / Prey's Peril usage.",
+    "Metal Bat (Brutal Demon): still judge the same fundamentals (neutral, dash discipline, awake value) even when kit names differ.",
   ],
   proLessons: [
     "Long sets (FT10+): stabilize after a lost game — one ego round should not tilt the whole set.",
