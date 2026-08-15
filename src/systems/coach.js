@@ -20,7 +20,7 @@ function identityBrief(profile) {
 
 async function callGemini({ prompt, frames }) {
   const key = process.env.GEMINI_API_KEY;
-  const model = process.env.COACH_MODEL || "gemini-2.0-flash";
+  const model = process.env.COACH_MODEL || "gemini-3.5-flash";
   const parts = [{ text: prompt }];
   for (const frame of frames || []) {
     if (!frame?.b64) continue;

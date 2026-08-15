@@ -18,7 +18,7 @@ It uses:
 Variables:
 ```
 GEMINI_API_KEY=paste_your_key_here
-COACH_MODEL=gemini-2.0-flash
+COACH_MODEL=gemini-3.5-flash
 ```
 
 Redeploy the API. Then in Discord:
