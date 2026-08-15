@@ -64,6 +64,35 @@ const ES = {
       "Sub-tier Strong / Stable / Weak (forma actual). Ejemplo: Phase 2 High Weak.",
     ],
   },
+  clans: {
+    title: "Clanes",
+    items: [
+      "Registro: mínimo 40 miembros.",
+      "Debe tener lineup en ambas regiones: Miami, FL y São Paulo, BR.",
+      "El nombre del clan no puede pasar de 20 caracteres ni ser inapropiado.",
+      "Registra el clan en General Support.",
+      "Si ya está en la leaderboard y quieres cambiar Clan Name, Clan Tag o Clan Leader: `>clan tu_nombre_de_clan` → Manage Clan.",
+    ],
+  },
+  glads: {
+    title: "Gladiators",
+    items: [
+      "Elegibilidad: mínimo 1 semana en el clan y tag oficial del clan. Si el clan no exige tag, el jugador debe aparecer en el roster oficial.",
+      "Prohibido: clanless, alts (salvo aprobación oficial), aliados dentro del lineup.",
+      "Técnico: ping inestable o mayor a 150ms no puede jugar glads.",
+      "Formato estándar: mínimo 3v3, máximo 7v7. Los leaders eligen el FT (FT3 hasta FT7) si ambos lados están de acuerdo.",
+      "Cross-region: obligatorio FT3 en cada región correspondiente.",
+    ],
+  },
+  autowin: {
+    title: "Autowin strikes",
+    items: [
+      "Autowin strikes se aplican cuando un clan causa un autowin injustificado.",
+      "Motivos: no presentarse en la ventana de 15 minutos; no cumplir requisitos de participación; miembros con scripts, Clumsy o bootstrapper ilegal.",
+      "3/3 strikes = salida de la leaderboard + 1 mes de suspensión del competitivo.",
+      "Con 1–2/3 strikes, se resetean completando 2 glads válidos.",
+    ],
+  },
   coachHints: [
     "En clips competitivos, señala pasividad, running, macros/tech ilegales si se ven, y legalidad de personaje.",
     "Consejos sobre kits legales (Saitama / Garou / Metal Bat) salvo que el clip sea casual con otro personaje.",
@@ -136,6 +165,35 @@ const EN = {
       "Sub-tier Strong / Stable / Weak. Example: Phase 2 High Weak.",
     ],
   },
+  clans: {
+    title: "Clans",
+    items: [
+      "Registration: minimum 40 members.",
+      "Must have a lineup for both regions: Miami, FL and São Paulo, BR.",
+      "Clan name cannot exceed 20 characters and must not be inappropriate.",
+      "Register the clan in General Support.",
+      "If already on the leaderboard and you want to change Clan Name, Clan Tag, or Clan Leader: `>clan your_clan_name` → Manage Clan.",
+    ],
+  },
+  glads: {
+    title: "Gladiators",
+    items: [
+      "Eligibility: at least 1 week in the clan and official clan tag. If the clan does not require a tag, the player must appear on the official roster.",
+      "Restrictions: clanless players banned; alt accounts banned unless officially approved; allied players in the lineup banned.",
+      "Technical: unstable ping or ping above 150ms cannot play glads.",
+      "Standard format: minimum 3v3, maximum 7v7. Leaders set FT (FT3 up to FT7) if both sides agree.",
+      "Cross-region glads must be FT3 in each corresponding region (mandatory).",
+    ],
+  },
+  autowin: {
+    title: "Autowin strikes",
+    items: [
+      "Autowin strikes are penalties when a clan causes an unjustified autowin.",
+      "Reasons: failing to show up in the agreed 15-minute window; not meeting participation requirements; members using scripts, Clumsy, or an illegal bootstrapper.",
+      "3/3 strikes = removal from the leaderboard + 1-month suspension from the competitive scene.",
+      "With 1–2/3 strikes, reset by completing 2 valid glads.",
+    ],
+  },
   coachHints: [
     "When reviewing a competitive clip, call out passive play, running, illegal macros/tech if visible, and character legality.",
     "Prefer legal kits (Saitama / Garou / Metal Bat) unless the clip is clearly casual with another character.",
@@ -151,7 +209,7 @@ const EN = {
 };
 
 const PACKS = { es: ES, en: EN };
-const SECTION_KEYS = ["leaderboard", "fairplay", "conduct", "tryouts", "phases"];
+const SECTION_KEYS = ["leaderboard", "fairplay", "conduct", "tryouts", "phases", "clans", "glads", "autowin"];
 
 function normalizeLang(raw) {
   const t = String(raw || "").toLowerCase();
@@ -164,7 +222,7 @@ function detectLang(text) {
   if (!t) return "es";
   if (/^(en|english|inglés|ingles)\b/i.test(t)) return "en";
   if (/^(es|español|espanol|spanish)\b/i.test(t)) return "es";
-  const esHits = (t.match(/\b(qué|que|cómo|como|cuál|cual|dónde|donde|cuál|fase|fases|reto|retar|personaje|prohibido|tryout|phase|cooldown|rango)\b/gi) || []).length;
+  const esHits = (t.match(/\b(qué|que|cómo|como|cuál|cual|dónde|donde|fase|fases|reto|retar|personaje|prohibido|tryout|phase|cooldown|rango|clan|glads|glad)\b/gi) || []).length;
   const enHits = (t.match(/\b(what|what's|whats|how|which|where|why|who|can|is|are|the|challenge|cooldown|allowed|banned)\b/gi) || []).length;
   if (enHits >= 2 && enHits > esHits) return "en";
   return "es";
@@ -217,6 +275,15 @@ function tsblPromptBlock(lang = "es") {
     "",
     `${pack.phases.title}:`,
     ...pack.phases.items.map((l) => `- ${l}`),
+    "",
+    `${pack.clans.title}:`,
+    ...pack.clans.items.map((l) => `- ${l}`),
+    "",
+    `${pack.glads.title}:`,
+    ...pack.glads.items.map((l) => `- ${l}`),
+    "",
+    `${pack.autowin.title}:`,
+    ...pack.autowin.items.map((l) => `- ${l}`),
     "",
     `${labels.coach}:`,
     ...pack.coachHints.map((l) => `- ${l}`),
