@@ -12,6 +12,7 @@ const leaderboard = require("./systems/leaderboard");
 const lineup = require("./systems/lineup");
 const ranking = require("./systems/ranking");
 const score = require("./systems/score");
+const tryouts = require("./systems/tryouts");
 const blacklist = require("./systems/blacklist");
 const trainers = require("./systems/trainers");
 const challenges = require("./systems/challenges");
@@ -145,6 +146,12 @@ function createApp() {
 
   bot.post("/score/:guildId", (req, res) => res.json(score.recordMatch(req.params.guildId, req.body || {})));
   bot.get("/score/:guildId/:userId", (req, res) => res.json(score.getRecord(req.params.guildId, req.params.userId)));
+  bot.get("/score-config/:guildId", (req, res) => res.json(score.getConfig(req.params.guildId)));
+  bot.post("/score-config/:guildId", (req, res) => res.json(score.updateConfig(req.params.guildId, req.body || {})));
+
+  bot.get("/tryouts/:guildId", (req, res) => res.json(tryouts.getSettings(req.params.guildId)));
+  bot.post("/tryouts/:guildId", (req, res) => res.json(tryouts.patchSettings(req.params.guildId, req.body || {})));
+  bot.post("/tryouts/:guildId/session", (req, res) => res.json(tryouts.saveSession(req.params.guildId, req.body || {})));
 
   bot.get("/blacklist/:guildId", (req, res) => res.json(blacklist.getList(req.params.guildId)));
   bot.post("/blacklist/:guildId", (req, res) => res.json(blacklist.addEntry(req.params.guildId, req.body || {})));

@@ -30,6 +30,11 @@ function defaultConfig(guildId) {
     managementChannelId: null,
     tipsMessageId: null,
     cardGifUrl: brand.defaultGif,
+    slotsPerRegion: 10,
+    subSlotsPerRegion: 10,
+    separateSubChannels: false,
+    allowedRoles: [],
+    enabledRegionKeys: ["na", "east", "west", "central", "eu", "asia"],
     regions,
   };
 }

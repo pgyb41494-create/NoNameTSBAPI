@@ -8,6 +8,14 @@ function defaultConfig(guildId) {
     setupCompleted: false,
     logChannelId: null,
     cooldownMs: 0,
+    winnerCooldownDays: 4,
+    loserCooldownDays: 7,
+    autowinEnabled: true,
+    autowinThreshold: 3,
+    autowinSuccessBehavior: "reset",
+    pvpUpdatesRoleId: null,
+    allowedRoleIds: [],
+    playerState: {},
     matches: [],
     records: {},
   };
@@ -73,4 +81,49 @@ function recordMatch(guildId, payload) {
   return match;
 }
 
-module.exports = { getConfig, updateConfig, getRecord, recordMatch };
+function getPlayerState(guildId, userId) {
+  const cfg = getConfig(guildId);
+  return cfg.playerState?.[String(userId)] || {
+    lastMatchAt: null,
+    lastResult: null,
+    cooldownUntil: null,
+    autowinStrikes: 0,
+  };
+}
+
+function setPlayerState(guildId, userId, patch) {
+  const cfg = getConfig(guildId);
+  const id = String(userId);
+  const playerState = { ...(cfg.playerState || {}) };
+  playerState[id] = {
+    lastMatchAt: null,
+    lastResult: null,
+    cooldownUntil: null,
+    autowinStrikes: 0,
+    ...(playerState[id] || {}),
+    ...patch,
+  };
+  return updateConfig(guildId, { playerState });
+}
+
+function pushMatch(guildId, match) {
+  const cfg = getConfig(guildId);
+  const matches = [match, ...(cfg.matches || [])].slice(0, 100);
+  return updateConfig(guildId, { matches });
+}
+
+function resetConfig(guildId) {
+  return updateConfig(guildId, defaultConfig(guildId));
+}
+
+module.exports = {
+  getConfig,
+  updateConfig,
+  getRecord,
+  recordMatch,
+  getPlayerState,
+  setPlayerState,
+  pushMatch,
+  resetConfig,
+  defaultConfig,
+};

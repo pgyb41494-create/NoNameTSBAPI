@@ -12,6 +12,7 @@ module.exports = {
   lineup: require("./systems/lineup"),
   ranking: require("./systems/ranking"),
   score: require("./systems/score"),
+  tryouts: require("./systems/tryouts"),
   blacklist: require("./systems/blacklist"),
   trainers: require("./systems/trainers"),
   challenges: require("./systems/challenges"),

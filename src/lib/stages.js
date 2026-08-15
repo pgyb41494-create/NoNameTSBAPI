@@ -77,6 +77,24 @@ function isStageAtMost(candidate, cap) {
   return stageRankValue(candidate) <= stageRankValue(cap);
 }
 
+/** Split a parsed stage label into Obscura role parts. */
+function splitStageParts(stageInput) {
+  const parsed = parseStage(stageInput);
+  if (!parsed) return null;
+  if (parsed === "Applicant") {
+    return { phaseNum: 1, tier: null, subtier: null, asApplicant: true, text: "Applicant" };
+  }
+  const match = parsed.match(/^(\d)\s+(Low|Mid|High)\s+(Weak|Stable|Strong)$/);
+  if (!match) return null;
+  return {
+    phaseNum: Number(match[1]),
+    tier: match[2],
+    subtier: match[3],
+    asApplicant: false,
+    text: parsed,
+  };
+}
+
 module.exports = {
   TIERS,
   HEIGHTS,
@@ -87,4 +105,5 @@ module.exports = {
   tryoutAssignCap,
   stageRankValue,
   isStageAtMost,
+  splitStageParts,
 };

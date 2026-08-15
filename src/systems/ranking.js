@@ -3,32 +3,90 @@ const { parseStage } = require("../lib/stages");
 
 const store = createJsonStore("ranking.json", {});
 
+function normalizeCommandName(value) {
+  return String(value || "stage").replace(/^[-/>!.]+/, "").trim().toLowerCase() || "stage";
+}
+
 function defaultConfig(guildId) {
   return {
     guildId,
     setupCompleted: false,
+    commandName: "stage",
     tierLabel: "Stage",
-    logChannelId: null,
-    cooldownRoleId: null,
+    tierCount: 5,
+    applicantEnabled: true,
+    leaderboardIntegration: true,
+    regionRequired: false,
+    phases: [],
+    tiers: [],
+    subtiers: ["High", "Mid", "Low"],
+    subranks: ["High", "Mid", "Low"],
+    powerRanks: ["Strong", "Stable", "Weak"],
+    authorizedRoles: [],
     authorizedRoleIds: [],
+    tierRoleIds: [],
+    subrankRoleIds: [],
+    powerRoleIds: [],
+    applicantRoleId: null,
+    colorMode: "fixed",
+    fixedColors: [],
+    tryoutCooldownDays: 0,
+    tryoutCooldownRoleId: null,
+    cooldownRoleId: null,
+    autoCreateRoles: true,
+    tierEmojis: [],
+    useRoleEmojis: false,
+    logChannelId: null,
     stages: {},
   };
 }
 
 function getConfig(guildId) {
   const db = store.load();
-  return db[guildId] || defaultConfig(guildId);
+  const cfg = { ...defaultConfig(guildId), ...(db[guildId] || {}) };
+  cfg.commandName = normalizeCommandName(cfg.commandName || "stage");
+  if (!cfg.subranks?.length && cfg.subtiers?.length) cfg.subranks = cfg.subtiers;
+  if (!cfg.authorizedRoles?.length && cfg.authorizedRoleIds?.length) {
+    cfg.authorizedRoles = cfg.authorizedRoleIds;
+  }
+  if (!cfg.tryoutCooldownRoleId && cfg.cooldownRoleId) {
+    cfg.tryoutCooldownRoleId = cfg.cooldownRoleId;
+  }
+  return cfg;
 }
 
 function updateConfig(guildId, patch) {
   let next = null;
   store.updateSync((db) => {
-    const current = db[guildId] || defaultConfig(guildId);
-    next = { ...current, ...patch, guildId };
+    const current = getConfig(guildId);
+    next = {
+      ...current,
+      ...patch,
+      guildId,
+      commandName: normalizeCommandName(patch.commandName || current.commandName),
+    };
     db[guildId] = next;
     return db;
   });
   return next;
+}
+
+function setConfig(guildId, config) {
+  return updateConfig(guildId, { ...config, setupCompleted: true });
+}
+
+function resetConfig(guildId) {
+  let next = null;
+  store.updateSync((db) => {
+    next = defaultConfig(guildId);
+    db[guildId] = next;
+    return db;
+  });
+  return next;
+}
+
+function isSetupCompleted(guildId) {
+  return !!getConfig(guildId).setupCompleted;
 }
 
 function setStage(guildId, userId, stageInput, moderatorId = null) {
@@ -49,4 +107,14 @@ function getStage(guildId, userId) {
   return cfg.stages?.[String(userId)]?.text || null;
 }
 
-module.exports = { getConfig, updateConfig, setStage, getStage, defaultConfig };
+module.exports = {
+  defaultConfig,
+  getConfig,
+  updateConfig,
+  setConfig,
+  resetConfig,
+  isSetupCompleted,
+  setStage,
+  getStage,
+  normalizeCommandName,
+};
