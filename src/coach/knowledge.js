@@ -138,7 +138,7 @@ function knowledgePrompt() {
     "Pro / stage lessons:",
     ...KNOWLEDGE.proLessons.map((l) => `- ${l}`),
     "",
-    tsblPromptBlock(),
+    tsblPromptBlock("en"),
     "",
     "When reviewing a vod, check:",
     ...KNOWLEDGE.vodChecklist.map((l) => `- ${l}`),

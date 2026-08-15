@@ -175,7 +175,7 @@ function createApp() {
 
   bot.post("/coach/ask", async (req, res) => {
     try {
-      const result = await coach.askTsbl(req.body?.question || req.body?.q || "");
+      const result = await coach.askTsbl(req.body || {});
       res.json(result);
     } catch (err) {
       res.status(500).json({ ok: false, error: err.message });
