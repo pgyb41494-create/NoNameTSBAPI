@@ -6,7 +6,7 @@ const { tsblPromptBlock } = require("./tsblRules");
  * Source clips / pro vods + TSBL competitive rules folded in.
  */
 const KNOWLEDGE = {
-  version: 4,
+  version: 5,
   game: "The Strongest Battlegrounds",
   notes:
     "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Apply TSBL competitive rules when the clip looks like a ranked/tryout/1v1. Be specific about what you see.",
@@ -27,6 +27,22 @@ const KNOWLEDGE = {
       about: "Clan stage voice — striping / running from pressure.",
     },
   ],
+  /** Lessons distilled from watched gameplay clips (frames + vision model). */
+  studiedClips: [
+    {
+      id: "roblox-2026-06-09",
+      summary:
+        "Saitama vs Saitama (~13s, Spanish HUD). axz_dai tracks abuela_2069 dash escape, M1 string into Golpes sucesivos kill while holding full Modo Serio.",
+      lessons: [
+        "Predictive dash-catch: cut off lateral/backdash escape angles — don't only chase their trail.",
+        "Saitama kill confirm: tight 4-hit M1 string → Golpes sucesivos (Consecutive Punches) while they are still in hitstun.",
+        "Do not pop Modo Serio / Serious Mode [G] when the opponent is already low and locked in an M1 confirm — save awake for the next stock.",
+        "Low-HP dash spam in open space without blocking or counterdashing loses the round; retreat toward structures to break tracking.",
+        "Spanish Saitama kit labels: 1 Puñetazo normal, 2 Golpes sucesivos, 3 Empujar, 4 Corte superior — use these names when HUD is ES.",
+        "Keep M1 click timing tight so there are no gaps for side-dash escape mid-string.",
+      ],
+    },
+  ],
   visionCues: [
     "Confirm identity from the nametag above the character (Roblox username), not only Discord.",
     "Top-right green bar = own health. Opponent health is the bar above their nametag.",
@@ -42,11 +58,17 @@ const KNOWLEDGE = {
     "Do not waste dash on approach if the opponent still has a punish tool. Side-dash after a read, not as a default.",
     "Block first when you do not have a confirmed read. Perfect block / well-timed block wins more sets than greedy counters.",
     "Track awakening / Serious Mode. Dumping awake into a lost neutral is a throw. Save it for a confirmed kill or comeback.",
+    "If opponent is already low and confirmed in an M1 string, finish with kit (e.g. Golpes sucesivos) — do not ego-pop awake.",
     "After a knockdown, take space or meaty — do not dash in raw if they have a wake-up option.",
     "Stamina / end-lag management: if a move is minus, stop mashing. Walk back and wait for the whiff.",
     "Do not spam the same starter. Mix M1, grab/throw pressure, and a delayed dash.",
     "When you win a stock, reset. Do not ego-dash into their awake.",
     "Convert confirms into real damage. Pros finish routes; randoms dash away and lose advantage.",
+    "When chasing a runner: predict their next dash destination and cut the angle instead of trailing behind.",
+  ],
+  characterRoutes: [
+    "Saitama (The Strongest Hero): common confirm is M1 string into Golpes sucesivos. Empujar / Corte superior are mix / approach tools — don't random them mid-confirm.",
+    "Garou (Hero Hunter) / Metal Bat (Brutal Demon): still judge the same fundamentals (neutral, dash discipline, awake value) even when kit names differ.",
   ],
   proLessons: [
     "Long sets (FT10+): stabilize after a lost game — one ego round should not tilt the whole set.",
@@ -64,7 +86,7 @@ const KNOWLEDGE = {
     "Are they using the character's actual combo route or random skills?",
     "Do they respect the opponent's plus frames?",
     "Do they chase kills that are not guaranteed?",
-    "Is Serious Mode / awake spent productively?",
+    "Is Serious Mode / awake spent productively (or wasted when a kit confirm already kills)?",
     "Are they running from pressure / striping instead of fighting (4s+ / spam side-dash away)?",
     "Passive for 12s+ without aggressive dash?",
     "Do they tilt after losing a round?",
@@ -81,6 +103,9 @@ const KNOWLEDGE = {
 };
 
 function knowledgePrompt() {
+  const clipLessons = KNOWLEDGE.studiedClips.flatMap((c) =>
+    c.lessons.map((l) => `- [${c.id}] ${l}`)
+  );
   return [
     `You are ${brand.name} TSB AI Coach for The Strongest Battlegrounds on Roblox.`,
     "Be direct, specific, and useful. No hype filler.",
@@ -90,6 +115,12 @@ function knowledgePrompt() {
     "",
     "Fundamentals:",
     ...KNOWLEDGE.fundamentals.map((l) => `- ${l}`),
+    "",
+    "Character routes:",
+    ...KNOWLEDGE.characterRoutes.map((l) => `- ${l}`),
+    "",
+    "Lessons from studied gameplay clips:",
+    ...clipLessons,
     "",
     "Pro / stage lessons:",
     ...KNOWLEDGE.proLessons.map((l) => `- ${l}`),

@@ -9,3 +9,6 @@ data/*.tmp
 .DS_Store
 tmp/
 uploads/
+src/coach/examples/**/*.jpg
+src/coach/examples/_*.js
+
