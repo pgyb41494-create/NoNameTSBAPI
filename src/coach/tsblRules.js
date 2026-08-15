@@ -22,6 +22,7 @@ const TSBL = {
     "Passive Strike: >12 seconds without an aggressive dash = strike. Counterdash does NOT count as aggressive. 3 strikes = autowin for opponent. If BOTH are passive, system does not apply.",
     "Running Rules: running for 4+ seconds banned. Spam side-dashing only to create distance also counts as running.",
     "Allowed competitive characters only: The Strongest Hero (Saitama), Hero Hunter (Garou), Brutal Demon (Metal Bat) — unless a host posts a different legal list for that event.",
+    "1v1 competitive: do NOT use ultimate / Serious Mode / Rampage (G key). Play and coach with base kit only.",
   ],
   tryouts: [
     "Tryout body: FT3 or FT5 (hoster choice). Region/host must be stated (e.g. Sao Paulo, Miami, Dallas, Los Angeles).",
@@ -50,6 +51,7 @@ const TSBL = {
     "Prefer advice that fits legal kits (Saitama / Garou / Metal Bat) unless the clip clearly shows another character in casual.",
     "If they stall or side-dash away for long stretches, cite Running Rules / Passive Strike.",
     "For tryout-style FT3/FT5 clips, judge composure and conversion — not only flashy movement.",
+    "In 1v1 reviews: if they press G (Serious Mode / Rampage / ultimate), call it out — base kit only.",
   ],
 };
 
