@@ -21,6 +21,8 @@ GEMINI_API_KEY=paste_your_key_here
 COACH_MODEL=gemini-3.5-flash
 ```
 
+Uses the Gemini **Interactions API** (`/v1beta/interactions`). Dead models like `gemini-2.0-flash` are auto-remapped to `gemini-3.5-flash`.
+
 Redeploy the API. Then in Discord:
 1. `/profile` → link Roblox  
 2. `/tsbcoach` with a video (or `'tsbcoach` + attachment/link)

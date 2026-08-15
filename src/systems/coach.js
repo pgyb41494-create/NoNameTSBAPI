@@ -19,36 +19,67 @@ function identityBrief(profile) {
   ].join("\n");
 }
 
+const DEAD_GEMINI_MODELS = new Set([
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-001",
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-flash",
+  "gemini-1.5-pro",
+]);
+
+function resolveCoachModel() {
+  const raw = String(process.env.COACH_MODEL || "gemini-3.5-flash").trim();
+  if (!raw || DEAD_GEMINI_MODELS.has(raw)) return "gemini-3.5-flash";
+  return raw;
+}
+
+function interactionOutputText(data) {
+  if (typeof data?.output_text === "string" && data.output_text.trim()) {
+    return data.output_text.trim();
+  }
+  const chunks = [];
+  for (const step of data?.steps || []) {
+    if (step?.type !== "model_output") continue;
+    for (const part of step.content || []) {
+      if (part?.type === "text" && part.text) chunks.push(part.text);
+    }
+  }
+  return chunks.join("\n").trim();
+}
+
+/** Gemini Interactions API (replaces legacy generateContent). */
 async function callGemini({ prompt, frames, temperature = 0.4 }) {
   const key = process.env.GEMINI_API_KEY;
-  const model = process.env.COACH_MODEL || "gemini-3.5-flash";
-  const parts = [{ text: prompt }];
+  const model = resolveCoachModel();
+  const input = [{ type: "text", text: prompt }];
   for (const frame of frames || []) {
     if (!frame?.b64) continue;
-    parts.push({
-      inline_data: {
-        mime_type: frame.mime || "image/jpeg",
-        data: frame.b64,
-      },
+    input.push({
+      type: "image",
+      data: frame.b64,
+      mime_type: frame.mime || "image/jpeg",
     });
   }
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts }],
-        generationConfig: { temperature },
-      }),
-    }
-  );
+  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": key,
+      "Api-Revision": "2026-05-20",
+    },
+    body: JSON.stringify({
+      model,
+      store: false,
+      input,
+      generation_config: { temperature },
+    }),
+  });
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data?.error?.message || `Gemini failed (${res.status})`);
   }
-  return data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("\n") || "";
+  return interactionOutputText(data);
 }
 
 async function callOpenAI({ prompt, frames, temperature = 0.4, system }) {
