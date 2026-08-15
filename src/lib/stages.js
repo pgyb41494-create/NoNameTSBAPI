@@ -49,19 +49,15 @@ function parseStage(input) {
   return `${tier} ${height} ${power}`;
 }
 
-/** Tryouter assignable cap: own phase, but never above 2 High Strong if they are higher. */
+/**
+ * Tryouter assignable cap = their own stage, but if they are stronger than
+ * 2 High Strong (Phase 0 / 1), the hard ceiling is still 2 High Strong.
+ */
 function tryoutAssignCap(tryouterStage) {
   const parsed = parseStage(tryouterStage);
   if (!parsed || parsed === "Applicant") return "2 High Strong";
-  const m = parsed.match(/^(\d)\s+(Low|Mid|High)\s+(Weak|Stable|Strong)$/);
-  if (!m) return "2 High Strong";
-  const tier = Number(m[1]);
-  if (tier > 2) return "2 High Strong";
-  if (tier === 2 && m[2] === "High" && m[3] === "Strong") return "2 High Strong";
-  if (tier === 2 && (m[2] === "High" || (m[2] === "Mid" && m[3] !== "Weak"))) {
-    // still within 2.x — return their own stage as max
-    return parsed;
-  }
+  const ceiling = "2 High Strong";
+  if (stageRankValue(parsed) > stageRankValue(ceiling)) return ceiling;
   return parsed;
 }
 

@@ -1,29 +1,30 @@
 const { brand } = require("../brand");
+const { tsblPromptBlock } = require("./tsblRules");
 
 /**
  * Coach “training” = this brief (not fine-tuning).
- * Source clips / pro vods folded into lessons below.
+ * Source clips / pro vods + TSBL competitive rules folded in.
  */
 const KNOWLEDGE = {
-  version: 3,
+  version: 4,
   game: "The Strongest Battlegrounds",
   notes:
-    "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Be specific about what you see (dash spam, mashing on block, wasted awake, running from pressure, etc.).",
+    "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Apply TSBL competitive rules when the clip looks like a ranked/tryout/1v1. Be specific about what you see.",
   referenceVods: [
     {
       id: "pcBVerfhZ6c",
       url: "https://www.youtube.com/watch?v=pcBVerfhZ6c",
-      about: "Pro FT10: XC (SG) vs Radiohead (KR) for top 1 Asia — region servers matter; XC wins overall after winning hard on home region and still scoring on AP.",
+      about: "Pro FT10: XC (SG) vs Radiohead (KR) for top 1 Asia — region servers matter.",
     },
     {
       id: "aVdOt8yDyf0",
       url: "https://www.youtube.com/watch?v=aVdOt8yDyf0",
-      about: "Edited TSB gameplay montage (p1fct) — use for reading flashy movement vs actual winning habits.",
+      about: "Edited TSB gameplay montage — flashy vs winning habits.",
     },
     {
       id: "TevMi7F-zO8",
       url: "https://www.youtube.com/watch?v=TevMi7F-zO8",
-      about: "Clan stage / ranked voice — striping, running from pressure, bias claims; coach composure and stage etiquette.",
+      about: "Clan stage voice — striping / running from pressure.",
     },
   ],
   visionCues: [
@@ -33,6 +34,7 @@ const KNOWLEDGE = {
     "MODO SERIO / Serious Mode meter with [G] = awakening / ultimate resource — call out dumping it badly.",
     "Knockdown / ragdoll on the ground = pressure or reset opportunity; note if they dash in raw.",
     "Red ground FX / hit VFX means an exchange just happened — judge who won the trade.",
+    "Watch for illegal running (long side-dash retreats) and passive stalling between engages.",
     "If the nametag does not match the linked profile username, set verified=false.",
   ],
   fundamentals: [
@@ -44,17 +46,16 @@ const KNOWLEDGE = {
     "Stamina / end-lag management: if a move is minus, stop mashing. Walk back and wait for the whiff.",
     "Do not spam the same starter. Mix M1, grab/throw pressure, and a delayed dash.",
     "When you win a stock, reset. Do not ego-dash into their awake.",
+    "Convert confirms into real damage. Pros finish routes; randoms dash away and lose advantage.",
   ],
-  /** Lessons distilled from the linked pro / stage vods */
   proLessons: [
     "Long sets (FT10+): stabilize after a lost game — one ego round should not tilt the whole set.",
-    "Region / ping: expect to lose more on the opponent's server; still farm points there. Pros win the series by winning home hard AND stealing games away.",
+    "Region / ping: expect to lose more on the opponent's server; still farm points there.",
     "Do not only play flashy. Montage movement that never converts is worse than ugly winning habits.",
-    "Running from pressure / striping to avoid a fight = free coach callout. Stand your ground or take a controlled reset — don't look scared.",
-    "On stage / clan ranked: respect the format. Bias, ping abuse arguments, and mic drama don't win stocks — execution does.",
-    "After you get a knockdown or big hit confirm, finish the sequence. Pros convert; randoms dash away and lose the advantage.",
+    "Running from pressure / striping to avoid a fight = free coach callout.",
+    "On stage / clan ranked: respect the format. Mic drama doesn't win stocks — execution does.",
     "If you're ahead in the set, play cleaner neutral — don't gift comeback awake.",
-    "Watch who takes first hit repeatedly. Top Asia sets are often decided by who owns opening neutral, not random awake.",
+    "Watch who takes first hit repeatedly. High-level sets are often decided by opening neutral.",
   ],
   vodChecklist: [
     "Did the player take first hit or lose neutral repeatedly?",
@@ -64,13 +65,16 @@ const KNOWLEDGE = {
     "Do they respect the opponent's plus frames?",
     "Do they chase kills that are not guaranteed?",
     "Is Serious Mode / awake spent productively?",
-    "Are they running from pressure / striping instead of fighting?",
-    "Do they tilt after losing a round (worse decisions next game)?",
+    "Are they running from pressure / striping instead of fighting (4s+ / spam side-dash away)?",
+    "Passive for 12s+ without aggressive dash?",
+    "Do they tilt after losing a round?",
+    "Legal character for competitive (Saitama / Garou / Metal Bat) if this looks ranked?",
   ],
   outputFormat: [
     "First line MUST be exactly: verified=true  OR  verified=false",
     "If verified=false: say why (wrong nametag / can't see name / wrong avatar) and stop — no full coach review.",
     "If verified=true: 3–6 concrete mistakes (mention what you saw on screen)",
+    "Call out TSBL rule breaks if visible (running, passive, illegal macros/tech)",
     "What to drill next session (short, specific)",
     "One thing they already do well",
   ],
@@ -87,8 +91,10 @@ function knowledgePrompt() {
     "Fundamentals:",
     ...KNOWLEDGE.fundamentals.map((l) => `- ${l}`),
     "",
-    "Pro / stage lessons (from high-level TSB sets & clan stages):",
+    "Pro / stage lessons:",
     ...KNOWLEDGE.proLessons.map((l) => `- ${l}`),
+    "",
+    tsblPromptBlock(),
     "",
     "When reviewing a vod, check:",
     ...KNOWLEDGE.vodChecklist.map((l) => `- ${l}`),
