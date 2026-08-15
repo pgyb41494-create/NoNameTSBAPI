@@ -55,6 +55,22 @@ const TSBL = {
   ],
 };
 
+const SECTIONS = {
+  leaderboard: { title: "Leaderboard", items: TSBL.leaderboard },
+  fairplay: { title: "Fair play / client", items: TSBL.fairPlay },
+  conduct: { title: "Match conduct", items: TSBL.matchConduct },
+  tryouts: { title: "Tryouts", items: TSBL.tryouts },
+  phases: { title: "Phases / stages", items: TSBL.phases },
+};
+
+function tsblSectionKeys() {
+  return Object.keys(SECTIONS);
+}
+
+function tsblSection(key) {
+  return SECTIONS[key] || SECTIONS.leaderboard;
+}
+
 function tsblPromptBlock() {
   return [
     `Competitive context: ${TSBL.name}`,
@@ -79,4 +95,4 @@ function tsblPromptBlock() {
   ].join("\n");
 }
 
-module.exports = { TSBL, tsblPromptBlock };
+module.exports = { TSBL, tsblPromptBlock, tsblSectionKeys, tsblSection };
