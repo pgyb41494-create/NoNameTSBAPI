@@ -2,15 +2,30 @@ const { brand } = require("../brand");
 
 /**
  * Coach “training” = this brief (not fine-tuning).
- * Expand notes / characterRoutes with your own vod reviews.
- * Example clip used for vision cues: Roblox-2026-06-09T02_24_41.513Z.mp4
- * (Spanish HUD · Serious Mode [G] · skill bar 1–4 · nametag above character)
+ * Source clips / pro vods folded into lessons below.
  */
 const KNOWLEDGE = {
-  version: 2,
+  version: 3,
   game: "The Strongest Battlegrounds",
   notes:
-    "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Be specific about what you see (dash spam, mashing on block, wasted awake, etc.).",
+    "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Be specific about what you see (dash spam, mashing on block, wasted awake, running from pressure, etc.).",
+  referenceVods: [
+    {
+      id: "pcBVerfhZ6c",
+      url: "https://www.youtube.com/watch?v=pcBVerfhZ6c",
+      about: "Pro FT10: XC (SG) vs Radiohead (KR) for top 1 Asia — region servers matter; XC wins overall after winning hard on home region and still scoring on AP.",
+    },
+    {
+      id: "aVdOt8yDyf0",
+      url: "https://www.youtube.com/watch?v=aVdOt8yDyf0",
+      about: "Edited TSB gameplay montage (p1fct) — use for reading flashy movement vs actual winning habits.",
+    },
+    {
+      id: "TevMi7F-zO8",
+      url: "https://www.youtube.com/watch?v=TevMi7F-zO8",
+      about: "Clan stage / ranked voice — striping, running from pressure, bias claims; coach composure and stage etiquette.",
+    },
+  ],
   visionCues: [
     "Confirm identity from the nametag above the character (Roblox username), not only Discord.",
     "Top-right green bar = own health. Opponent health is the bar above their nametag.",
@@ -30,6 +45,17 @@ const KNOWLEDGE = {
     "Do not spam the same starter. Mix M1, grab/throw pressure, and a delayed dash.",
     "When you win a stock, reset. Do not ego-dash into their awake.",
   ],
+  /** Lessons distilled from the linked pro / stage vods */
+  proLessons: [
+    "Long sets (FT10+): stabilize after a lost game — one ego round should not tilt the whole set.",
+    "Region / ping: expect to lose more on the opponent's server; still farm points there. Pros win the series by winning home hard AND stealing games away.",
+    "Do not only play flashy. Montage movement that never converts is worse than ugly winning habits.",
+    "Running from pressure / striping to avoid a fight = free coach callout. Stand your ground or take a controlled reset — don't look scared.",
+    "On stage / clan ranked: respect the format. Bias, ping abuse arguments, and mic drama don't win stocks — execution does.",
+    "After you get a knockdown or big hit confirm, finish the sequence. Pros convert; randoms dash away and lose the advantage.",
+    "If you're ahead in the set, play cleaner neutral — don't gift comeback awake.",
+    "Watch who takes first hit repeatedly. Top Asia sets are often decided by who owns opening neutral, not random awake.",
+  ],
   vodChecklist: [
     "Did the player take first hit or lose neutral repeatedly?",
     "Are they mashing on block or after a missed skill?",
@@ -38,6 +64,8 @@ const KNOWLEDGE = {
     "Do they respect the opponent's plus frames?",
     "Do they chase kills that are not guaranteed?",
     "Is Serious Mode / awake spent productively?",
+    "Are they running from pressure / striping instead of fighting?",
+    "Do they tilt after losing a round (worse decisions next game)?",
   ],
   outputFormat: [
     "First line MUST be exactly: verified=true  OR  verified=false",
@@ -58,6 +86,9 @@ function knowledgePrompt() {
     "",
     "Fundamentals:",
     ...KNOWLEDGE.fundamentals.map((l) => `- ${l}`),
+    "",
+    "Pro / stage lessons (from high-level TSB sets & clan stages):",
+    ...KNOWLEDGE.proLessons.map((l) => `- ${l}`),
     "",
     "When reviewing a vod, check:",
     ...KNOWLEDGE.vodChecklist.map((l) => `- ${l}`),
