@@ -173,6 +173,15 @@ function createApp() {
     }
   });
 
+  bot.post("/coach/ask", async (req, res) => {
+    try {
+      const result = await coach.askTsbl(req.body?.question || req.body?.q || "");
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  });
+
   bot.get("/snapshot/:guildId", (req, res) => res.json(snapshot.publicSnapshot(req.params.guildId)));
   bot.get("/player/:guildId/:userId", (req, res) => res.json(snapshot.playerBundle(req.params.guildId, req.params.userId)));
   bot.post("/guilds/:guildId", (req, res) => res.json(guilds.updateGuild(req.params.guildId, req.body || {})));
