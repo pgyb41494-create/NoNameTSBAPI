@@ -31,8 +31,8 @@ function parseStage(input) {
   if (/applicant/i.test(raw)) return "Applicant";
 
   const cleaned = raw
-    .replace(/ph(ase)?/gi, " ")
-    .replace(/st(age)?/gi, " ")
+    .replace(/\bph(?:ase)?\b/gi, " ")
+    .replace(/\bstage\b/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
 
