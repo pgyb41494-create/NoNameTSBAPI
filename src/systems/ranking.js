@@ -4,15 +4,15 @@ const { parseStage } = require("../lib/stages");
 const store = createJsonStore("ranking.json", {});
 
 function normalizeCommandName(value) {
-  return String(value || "stage").replace(/^[-/>!.]+/, "").trim().toLowerCase() || "stage";
+  return String(value || "phase").replace(/^[-/>!.]+/, "").trim().toLowerCase() || "phase";
 }
 
 function defaultConfig(guildId) {
   return {
     guildId,
     setupCompleted: false,
-    commandName: "stage",
-    tierLabel: "Stage",
+    commandName: "phase",
+    tierLabel: "Phase",
     tierCount: 5,
     applicantEnabled: true,
     leaderboardIntegration: true,
@@ -44,7 +44,9 @@ function defaultConfig(guildId) {
 function getConfig(guildId) {
   const db = store.load();
   const cfg = { ...defaultConfig(guildId), ...(db[guildId] || {}) };
-  cfg.commandName = normalizeCommandName(cfg.commandName || "stage");
+  cfg.commandName = normalizeCommandName(cfg.commandName || "phase");
+  if (cfg.commandName === "stage") cfg.commandName = "phase";
+  if (String(cfg.tierLabel || "") === "Stage") cfg.tierLabel = "Phase";
   if (!cfg.subranks?.length && cfg.subtiers?.length) cfg.subranks = cfg.subtiers;
   if (!cfg.authorizedRoles?.length && cfg.authorizedRoleIds?.length) {
     cfg.authorizedRoles = cfg.authorizedRoleIds;
