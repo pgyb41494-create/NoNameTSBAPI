@@ -103,6 +103,8 @@ async function listDashboardGuilds(session) {
 async function canConfigureGuild(session, guildId) {
   const id = String(guildId || "");
   if (!id || id === "network") return false;
+  // Bot owners can configure every server the bot is in — no Discord Admin required.
+  if (isStaff(session?.id)) return true;
   const guilds = await listDashboardGuilds(session);
   return guilds.some((g) => g.id === id && g.botPresent);
 }

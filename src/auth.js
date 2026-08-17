@@ -1,11 +1,14 @@
 const crypto = require("crypto");
 
-const STAFF_IDS = new Set(
-  String(process.env.STAFF_DISCORD_IDS || "1515419032520626261,1196512159266504797")
+const OWNER_IDS = ["1515419032520626261", "1196512159266504797"];
+
+const STAFF_IDS = new Set([
+  ...OWNER_IDS,
+  ...String(process.env.STAFF_DISCORD_IDS || "")
     .split(",")
     .map((id) => id.trim())
-    .filter(Boolean)
-);
+    .filter(Boolean),
+]);
 
 const DEFAULT_SITE = "https://no-name-tsb-website.vercel.app";
 
