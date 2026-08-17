@@ -195,14 +195,58 @@ async function fetchUser(userId) {
   return publicUser(user, 256);
 }
 
+function localVerifyStore() {
+  return null;
+}
+
+function publicRole(role, guildId) {
+  return {
+    id: role.id,
+    name: role.name,
+    color: role.hexColor || null,
+    position: role.position,
+    managed: !!role.managed,
+    everyone: role.id === guildId,
+  };
+}
+
+async function listRoles(guildId) {
+  const c = requireClient();
+  if (!c) return remoteDiscord(`/discord/guilds/${guildId}/roles`);
+  const guild = await c.guilds.fetch(guildId);
+  const roles = await guild.roles.fetch();
+  return [...roles.values()]
+    .filter((role) => role && role.id !== guild.id && !role.managed)
+    .sort((a, b) => b.position - a.position)
+    .map((role) => publicRole(role, guild.id));
+}
+
+async function getVerifyConfig(guildId) {
+  const local = localVerifyStore();
+  if (local) return local.publicConfig(guildId);
+  return remoteDiscord(`/discord/guilds/${guildId}/verify`);
+}
+
+async function setVerifyConfig(guildId, body) {
+  const local = localVerifyStore();
+  if (local) {
+    local.applyPublicPatch(guildId, body || {});
+    return local.publicConfig(guildId);
+  }
+  return remoteDiscord(`/discord/guilds/${guildId}/verify`, { method: "PUT", body: body || {} });
+}
+
 module.exports = {
   setClient,
   getClient,
   listGuilds,
   listGuildsAsync,
   listChannels,
+  listRoles,
   searchMembers,
   fetchUser,
   sendChannelMessage,
   sendDirectMessage,
+  getVerifyConfig,
+  setVerifyConfig,
 };

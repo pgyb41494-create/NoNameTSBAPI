@@ -171,6 +171,30 @@ function mountStaff(app) {
     }
   });
 
+  r.get("/:guildId/roles", async (req, res) => {
+    try {
+      res.json({ roles: await bridge.listRoles(req.params.guildId) });
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.get("/:guildId/verify", async (req, res) => {
+    try {
+      res.json(await bridge.getVerifyConfig(req.params.guildId));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.put("/:guildId/verify", async (req, res) => {
+    try {
+      res.json(await bridge.setVerifyConfig(req.params.guildId, req.body || {}));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
   r.get("/:guildId/overview", (req, res) => {
     res.json(snapshot.publicSnapshot(req.params.guildId));
   });
