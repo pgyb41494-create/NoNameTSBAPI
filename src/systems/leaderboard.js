@@ -28,6 +28,14 @@ function defaultConfig(guildId) {
     tipsMessageId: null,
     slots: emptySlots(10),
     messageIds: {},
+    challengeTickets: {
+      enabled: false,
+      channelId: "",
+      categoryId: "",
+      panelMessageId: "",
+      spotsAhead: 3,
+      ranges: [],
+    },
   };
 }
 
