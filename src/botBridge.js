@@ -106,6 +106,27 @@ async function listChannels(guildId) {
     }));
 }
 
+async function createChannel(guildId, body = {}) {
+  const c = requireClient();
+  if (!c) {
+    return remoteDiscord(`/discord/guilds/${guildId}/channels`, { method: "POST", body: body || {} });
+  }
+  const guild = await c.guilds.fetch(guildId);
+  const name =
+    String(body.name || "logs")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 90) || "logs";
+  const created = await guild.channels.create({
+    name,
+    type: 0,
+    reason: "Created from Ascendant dashboard",
+  });
+  return { id: created.id, name: created.name, type: "text" };
+}
+
 async function searchMembers(guildId, query = "") {
   const c = requireClient();
   if (!c) {
@@ -237,6 +258,40 @@ async function setVerifyConfig(guildId, body) {
   return remoteDiscord(`/discord/guilds/${guildId}/verify`, { method: "PUT", body: body || {} });
 }
 
+function localOpsStore() {
+  return null;
+}
+
+async function getAuditConfig(guildId) {
+  const local = localOpsStore();
+  if (local) return local.publicAudit(guildId);
+  return remoteDiscord(`/discord/guilds/${guildId}/audit`);
+}
+
+async function setAuditConfig(guildId, body) {
+  const local = localOpsStore();
+  if (local) {
+    local.applyAuditPatch(guildId, body || {});
+    return local.publicAudit(guildId);
+  }
+  return remoteDiscord(`/discord/guilds/${guildId}/audit`, { method: "PUT", body: body || {} });
+}
+
+async function getInvitesConfig(guildId) {
+  const local = localOpsStore();
+  if (local) return local.publicInvites(guildId);
+  return remoteDiscord(`/discord/guilds/${guildId}/invites`);
+}
+
+async function setInvitesConfig(guildId, body) {
+  const local = localOpsStore();
+  if (local) {
+    local.applyInvitesPatch(guildId, body || {});
+    return local.publicInvites(guildId);
+  }
+  return remoteDiscord(`/discord/guilds/${guildId}/invites`, { method: "PUT", body: body || {} });
+}
+
 module.exports = {
   setClient,
   getClient,
@@ -250,4 +305,9 @@ module.exports = {
   sendDirectMessage,
   getVerifyConfig,
   setVerifyConfig,
+  getAuditConfig,
+  setAuditConfig,
+  getInvitesConfig,
+  setInvitesConfig,
+  createChannel,
 };

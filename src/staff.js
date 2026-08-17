@@ -207,9 +207,68 @@ function mountStaff(app) {
     res.json(snapshot.publicSnapshot(req.params.guildId));
   });
 
-  r.get("/:guildId/channels", requireStaff, async (req, res) => {
+  r.get("/:guildId/channels", async (req, res) => {
     try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
       res.json({ channels: await bridge.listChannels(req.params.guildId) });
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.post("/:guildId/channels", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      const created = await bridge.createChannel(req.params.guildId, req.body || {});
+      res.json(created);
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.get("/:guildId/audit", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.getAuditConfig(req.params.guildId));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.put("/:guildId/audit", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.setAuditConfig(req.params.guildId, req.body || {}));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.get("/:guildId/invites", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.getInvitesConfig(req.params.guildId));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.put("/:guildId/invites", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.setInvitesConfig(req.params.guildId, req.body || {}));
     } catch (err) {
       fail(res, err);
     }
