@@ -6,6 +6,7 @@ const reports = require("./systems/reports");
 const snapshot = require("./systems/snapshot");
 const bridge = require("./botBridge");
 const guilds = require("./systems/guilds");
+const { listDashboardGuilds, canConfigureGuild } = require("./lib/dashboardGuilds");
 
 function loginAuth(req, res, next) {
   const user = readSession(req);
@@ -14,11 +15,9 @@ function loginAuth(req, res, next) {
   next();
 }
 
-function staffAuth(req, res, next) {
-  const user = readSession(req);
-  if (!user) return res.status(401).json({ error: "Login required" });
-  if (!isStaff(user.id)) return res.status(403).json({ error: "Staff only" });
-  req.staff = user;
+function requireStaff(req, res, next) {
+  if (!isStaff(req.user?.id)) return res.status(403).json({ error: "Staff only" });
+  req.staff = req.user;
   next();
 }
 
@@ -83,21 +82,21 @@ function mountStaff(app) {
   app.use("/api/user", userRouter);
 
   const r = express.Router();
-  r.use(staffAuth);
+  r.use(loginAuth);
 
-  r.get("/guilds", async (_req, res) => {
+  r.get("/guilds", async (req, res) => {
     try {
-      res.json({ guilds: await bridge.listGuildsAsync() });
+      res.json({ guilds: await listDashboardGuilds(req.user) });
     } catch (err) {
       fail(res, err);
     }
   });
 
-  r.get("/reports", (_req, res) => {
+  r.get("/reports", requireStaff, (_req, res) => {
     res.json({ reports: reports.list("pending") });
   });
 
-  r.post("/reports/:id/approve", async (req, res) => {
+  r.post("/reports/:id/approve", requireStaff, async (req, res) => {
     try {
       const report = reports.get(req.params.id);
       if (!report) return res.status(404).json({ error: "Report not found" });
@@ -139,7 +138,7 @@ function mountStaff(app) {
     }
   });
 
-  r.post("/reports/:id/deny", (req, res) => {
+  r.post("/reports/:id/deny", requireStaff, (req, res) => {
     const report = reports.get(req.params.id);
     if (!report) return res.status(404).json({ error: "Report not found" });
     reports.update(report.id, {
@@ -150,7 +149,7 @@ function mountStaff(app) {
     res.json({ ok: true });
   });
 
-  r.post("/message", async (req, res) => {
+  r.post("/message", requireStaff, async (req, res) => {
     try {
       const { type, guildId, channelId, userId, content, embed, format } = req.body || {};
       const useEmbed = format === "embed" || (embed && typeof embed === "object");
@@ -173,6 +172,9 @@ function mountStaff(app) {
 
   r.get("/:guildId/roles", async (req, res) => {
     try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
       res.json({ roles: await bridge.listRoles(req.params.guildId) });
     } catch (err) {
       fail(res, err);
@@ -181,6 +183,9 @@ function mountStaff(app) {
 
   r.get("/:guildId/verify", async (req, res) => {
     try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
       res.json(await bridge.getVerifyConfig(req.params.guildId));
     } catch (err) {
       fail(res, err);
@@ -189,17 +194,20 @@ function mountStaff(app) {
 
   r.put("/:guildId/verify", async (req, res) => {
     try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
       res.json(await bridge.setVerifyConfig(req.params.guildId, req.body || {}));
     } catch (err) {
       fail(res, err);
     }
   });
 
-  r.get("/:guildId/overview", (req, res) => {
+  r.get("/:guildId/overview", requireStaff, (req, res) => {
     res.json(snapshot.publicSnapshot(req.params.guildId));
   });
 
-  r.get("/:guildId/channels", async (req, res) => {
+  r.get("/:guildId/channels", requireStaff, async (req, res) => {
     try {
       res.json({ channels: await bridge.listChannels(req.params.guildId) });
     } catch (err) {
@@ -207,7 +215,7 @@ function mountStaff(app) {
     }
   });
 
-  r.get("/:guildId/members", async (req, res) => {
+  r.get("/:guildId/members", requireStaff, async (req, res) => {
     try {
       res.json({ members: await bridge.searchMembers(req.params.guildId, req.query.q || "") });
     } catch (err) {
@@ -215,8 +223,8 @@ function mountStaff(app) {
     }
   });
 
-  r.get("/:guildId/blacklist", (req, res) => res.json(blacklist.getList(req.params.guildId)));
-  r.post("/:guildId/blacklist", async (req, res) => {
+  r.get("/:guildId/blacklist", requireStaff, (req, res) => res.json(blacklist.getList(req.params.guildId)));
+  r.post("/:guildId/blacklist", requireStaff, async (req, res) => {
     try {
       const { discordId, reason, evidence, where, when } = req.body || {};
       if (!discordId) return res.status(400).json({ error: "discordId is required" });
@@ -242,12 +250,12 @@ function mountStaff(app) {
       fail(res, err);
     }
   });
-  r.delete("/:guildId/blacklist/:userId", (req, res) => {
+  r.delete("/:guildId/blacklist/:userId", requireStaff, (req, res) => {
     res.json(blacklist.removeEntry(req.params.guildId, req.params.userId));
   });
 
-  r.get("/:guildId/trainers", (req, res) => res.json(trainers.getList(req.params.guildId)));
-  r.post("/:guildId/trainers", async (req, res) => {
+  r.get("/:guildId/trainers", requireStaff, (req, res) => res.json(trainers.getList(req.params.guildId)));
+  r.post("/:guildId/trainers", requireStaff, async (req, res) => {
     try {
       const { discordId, stage, price, bio, role } = req.body || {};
       if (!discordId) return res.status(400).json({ error: "discordId is required" });
@@ -270,15 +278,15 @@ function mountStaff(app) {
       fail(res, err);
     }
   });
-  r.delete("/:guildId/trainers/:userId", (req, res) => {
+  r.delete("/:guildId/trainers/:userId", requireStaff, (req, res) => {
     res.json(trainers.remove(req.params.guildId, req.params.userId));
   });
 
-  r.post("/:guildId/wars", (req, res) => {
+  r.post("/:guildId/wars", requireStaff, (req, res) => {
     res.json(wars.addWar(req.params.guildId, req.body || {}));
   });
 
   app.use("/api/staff", r);
 }
 
-module.exports = { mountStaff, staffAuth, loginAuth };
+module.exports = { mountStaff, loginAuth, requireStaff };

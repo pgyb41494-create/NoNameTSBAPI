@@ -131,7 +131,7 @@ function discordAuthorizeUrl() {
     client_id: clientId(),
     redirect_uri: redirectUri(),
     response_type: "code",
-    scope: "identify",
+    scope: "identify guilds",
   });
   return `https://discord.com/api/oauth2/authorize?${params}`;
 }
@@ -186,6 +186,7 @@ function mountAuth(app) {
           const { discordAvatarUrl } = require("./lib/discordUser");
           return discordAvatarUrl(user.id, user.avatar, 128);
         })(),
+        discordAccess: tokens.access_token || "",
         exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
       });
       res.setHeader("Set-Cookie", cookieHeader(token));
@@ -215,5 +216,6 @@ module.exports = {
   isStaff,
   publicUser,
   websiteUrl,
+  clientId,
   STAFF_IDS,
 };
