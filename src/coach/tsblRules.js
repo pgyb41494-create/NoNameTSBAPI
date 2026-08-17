@@ -1,6 +1,6 @@
 /**
  * TSBCC / LATAM TSB Competitive rules.
- * Spanish is the league language; English is a toggle.
+ * English is the bot default; Spanish is a toggle.
  */
 const TSBL = {
   name: "TSBCC (LATAM TSB Competitive)",
@@ -146,7 +146,7 @@ const EN = {
       "Stay respectful. No intentional delay / lagswitch.",
       "When the server fills and the event starts, mark it Locked.",
       "After the tryout, the applicant sends Discord username/tag to the tryouter to register the result.",
-      "Template: Tryout/FT, Region, Tu Phase, Condición, Link.",
+      "Template: Tryout/FT, Region, Your Phase, Condition, Link.",
       "Results go in the results channel. Assign phase with: >phase 2 high weak @user (or bot 'stage / /stage).",
       "Tryouter max assignable phase = their own. If they are above 2 High Strong, the ceiling is still 2 High Strong.",
     ],
@@ -157,11 +157,11 @@ const EN = {
       "Phases classify LATAM skill — not a global ladder. Players may earn phase on their host.",
       "Hosts: São Paulo BR; Miami FL; Dallas TX; Los Angeles CA.",
       "Phase 0 Supremo — peak LATAM mastery.",
-      "Phase 1 Avanzado — high, stable regional level (Top LATAM/SA).",
-      "Phase 2 Promedio — standard competitive level.",
-      "Phase 3 En crecimiento — fundamentals OK, still inconsistent.",
-      "Phase 4 Principiante con base — movement, dashes, simple combos.",
-      "Phase 5 Nuevo en TSBCC — new to the system.",
+      "Phase 1 Advanced — high, stable regional level (Top LATAM/SA).",
+      "Phase 2 Average — standard competitive level.",
+      "Phase 3 Growing — fundamentals OK, still inconsistent.",
+      "Phase 4 Beginner with basics — movement, dashes, simple combos.",
+      "Phase 5 New to TSBCC — new to the system.",
       "Inside a Phase: Tier High / Mid / Low.",
       "Sub-tier Strong / Stable / Weak. Example: Phase 2 High Weak.",
     ],
@@ -205,7 +205,7 @@ const EN = {
   ],
   ui: {
     pick: "Pick a rules section",
-    askHint: "Ask a specific question with `'ask …`. Español: `'rules es`.",
+    askHint: "Ask a specific question with `'ask …`. Spanish: `'rules es`.",
     footerAsk: "Ask a specific question with `'ask …`.",
   },
 };
@@ -215,35 +215,35 @@ const SECTION_KEYS = ["leaderboard", "fairplay", "conduct", "tryouts", "phases",
 
 function normalizeLang(raw) {
   const t = String(raw || "").toLowerCase();
-  if (t === "en" || t === "english" || t === "inglés" || t === "ingles") return "en";
-  return "es";
+  if (t === "es" || t === "español" || t === "espanol" || t === "spanish") return "es";
+  return "en";
 }
 
 function detectLang(text) {
   const t = String(text || "").trim();
-  if (!t) return "es";
-  if (/^(en|english|inglés|ingles)\b/i.test(t)) return "en";
+  if (!t) return "en";
   if (/^(es|español|espanol|spanish)\b/i.test(t)) return "es";
+  if (/^(en|english|inglés|ingles)\b/i.test(t)) return "en";
   const esHits = (t.match(/\b(qué|que|cómo|como|cuál|cual|dónde|donde|fase|fases|reto|retar|personaje|prohibido|tryout|phase|cooldown|rango|clan|glads|glad)\b/gi) || []).length;
   const enHits = (t.match(/\b(what|what's|whats|how|which|where|why|who|can|is|are|the|challenge|cooldown|allowed|banned)\b/gi) || []).length;
-  if (enHits >= 2 && enHits > esHits) return "en";
-  return "es";
+  if (esHits >= 2 && esHits > enHits) return "es";
+  return "en";
 }
 
 function tsblPack(lang) {
-  return PACKS[normalizeLang(lang)] || ES;
+  return PACKS[normalizeLang(lang)] || EN;
 }
 
 function tsblSectionKeys() {
   return SECTION_KEYS.slice();
 }
 
-function tsblSection(key, lang = "es") {
+function tsblSection(key, lang = "en") {
   const pack = tsblPack(lang);
   return pack[key] || pack.leaderboard;
 }
 
-function tsblPromptBlock(lang = "es") {
+function tsblPromptBlock(lang = "en") {
   const pack = tsblPack(lang);
   const L = normalizeLang(lang);
   const labels =

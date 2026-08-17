@@ -128,7 +128,7 @@ function parseVerdict(text) {
   return { verified: confirmed && !denied, raw: text };
 }
 
-function askSystemPrompt(lang = "es") {
+function askSystemPrompt(lang = "en") {
   const es = normalizeLang(lang) === "es";
   const replyLang = es ? "Spanish (LATAM)" : "English";
   const offTopic = es
@@ -178,9 +178,9 @@ async function askTsbl(input) {
       ok: false,
       code: "empty",
       message:
-        lang === "en"
-          ? "Ask something about TSBCC, e.g. `'ask challenge cooldown`"
-          : "Pregunta algo de TSBCC, ej. `'ask cooldown de retos`",
+        lang === "es"
+          ? "Pregunta algo de TSBCC, ej. `'ask cooldown de retos`"
+          : "Ask something about TSBCC, e.g. `'ask challenge cooldown`",
     };
   }
 
@@ -189,9 +189,9 @@ async function askTsbl(input) {
       ok: false,
       code: "no_ai",
       message:
-        lang === "en"
-          ? "AI is not connected yet. Set GEMINI_API_KEY on the API service."
-          : "La IA no está conectada. Configura GEMINI_API_KEY en el API.",
+        lang === "es"
+          ? "La IA no está conectada. Configura GEMINI_API_KEY en el API."
+          : "AI is not connected yet. Set GEMINI_API_KEY on the API service.",
     };
   }
 
