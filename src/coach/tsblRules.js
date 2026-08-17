@@ -1,9 +1,9 @@
 /**
- * TSBL / LATAM TSB Competitive rules.
+ * TSBCC / LATAM TSB Competitive rules.
  * Spanish is the league language; English is a toggle.
  */
 const TSBL = {
-  name: "TSBL (LATAM TSB Competitive)",
+  name: "TSBCC (LATAM TSB Competitive)",
 };
 
 const ES = {
@@ -59,7 +59,7 @@ const ES = {
       "Phase 2 Promedio — nivel competitivo estándar de la región.",
       "Phase 3 En crecimiento — fundamentos claros, todavía irregular.",
       "Phase 4 Principiante con base — movimientos, dashes y combos simples.",
-      "Phase 5 Nuevo en TSBL — recién empieza en el sistema.",
+      "Phase 5 Nuevo en TSBCC — recién empieza en el sistema.",
       "Dentro de la Phase: Tier High / Mid / Low (posición en esa phase).",
       "Sub-tier Strong / Stable / Weak (forma actual). Ejemplo: Phase 2 High Weak.",
     ],
@@ -161,7 +161,7 @@ const EN = {
       "Phase 2 Promedio — standard competitive level.",
       "Phase 3 En crecimiento — fundamentals OK, still inconsistent.",
       "Phase 4 Principiante con base — movement, dashes, simple combos.",
-      "Phase 5 Nuevo en TSBL — new to the system.",
+      "Phase 5 Nuevo en TSBCC — new to the system.",
       "Inside a Phase: Tier High / Mid / Low.",
       "Sub-tier Strong / Stable / Weak. Example: Phase 2 High Weak.",
     ],

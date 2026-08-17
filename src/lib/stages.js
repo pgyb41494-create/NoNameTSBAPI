@@ -28,7 +28,7 @@ function defaultStages() {
 function parseStage(input) {
   const raw = String(input || "").trim();
   if (!raw) return null;
-  if (/applicant/i.test(raw)) return "Applicant";
+  if (/\b(applicant|appl|app)\b/i.test(raw)) return "Applicant";
 
   const cleaned = raw
     .replace(/\bph(?:ase)?\b/gi, " ")

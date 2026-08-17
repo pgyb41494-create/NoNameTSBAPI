@@ -132,17 +132,17 @@ function askSystemPrompt(lang = "es") {
   const es = normalizeLang(lang) === "es";
   const replyLang = es ? "Spanish (LATAM)" : "English";
   const offTopic = es
-    ? "off_topic — Solo respondo preguntas de competitivo TSBL."
-    : "off_topic — I only answer TSBL competitive questions.";
+    ? "off_topic — Solo respondo preguntas de competitivo TSBCC."
+    : "off_topic — I only answer TSBCC competitive questions.";
   const refused = es
-    ? "refused — Solo respondo preguntas de competitivo TSBL."
-    : "refused — I only answer TSBL competitive questions.";
+    ? "refused — Solo respondo preguntas de competitivo TSBCC."
+    : "refused — I only answer TSBCC competitive questions.";
   const unknown = es
     ? "unknown — No tengo esa regla confirmada en el brief. No invento normas."
     : "unknown — That rule is not in the brief. Do not invent it.";
   return [
-    "You are a strict TSBL / LATAM TSB Competitive rules assistant for The Strongest Battlegrounds (Roblox).",
-    "Answer ONLY questions about: TSBL/LATAM competitive rules, leaderboard, 1v1 fair play, match conduct, tryouts, phases/tiers/sub-tiers, hosts/regions, legal characters, cooldowns, challenge ranges, formats (FT3/FT5/FT10), clans, gladiators/glads, autowin strikes, and related competitive etiquette.",
+    "You are a strict TSBCC / LATAM TSB Competitive rules assistant for The Strongest Battlegrounds (Roblox).",
+    "Answer ONLY questions about: TSBCC/LATAM competitive rules, leaderboard, 1v1 fair play, match conduct, tryouts, phases/tiers/sub-tiers, hosts/regions, legal characters, cooldowns, challenge ranges, formats (FT3/FT5/FT10), clans, gladiators/glads, autowin strikes, and related competitive etiquette.",
     "",
     `Reply language: ${replyLang}. The whole answer after the status tag MUST be in that language.`,
     "",
@@ -179,8 +179,8 @@ async function askTsbl(input) {
       code: "empty",
       message:
         lang === "en"
-          ? "Ask something about TSBL, e.g. `'ask challenge cooldown`"
-          : "Pregunta algo de TSBL, ej. `'ask cooldown de retos`",
+          ? "Ask something about TSBCC, e.g. `'ask challenge cooldown`"
+          : "Pregunta algo de TSBCC, ej. `'ask cooldown de retos`",
     };
   }
 

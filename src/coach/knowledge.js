@@ -3,13 +3,13 @@ const { tsblPromptBlock } = require("./tsblRules");
 
 /**
  * Coach “training” = this brief (not fine-tuning).
- * Source clips / pro vods + TSBL competitive rules folded in.
+ * Source clips / pro vods + TSBCC competitive rules folded in.
  */
 const KNOWLEDGE = {
   version: 8,
   game: "The Strongest Battlegrounds",
   notes:
-    "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Apply TSBL competitive rules when the clip looks like ranked, tryout, 1v1, or clan glads. In 1v1 competitive, do NOT use or recommend ultimate / Serious Mode / Rampage (G). Be specific about what you see.",
+    "You review player clips using screenshots/frames. Read the HUD and nametag. UI may be English OR Spanish. Apply TSBCC competitive rules when the clip looks like ranked, tryout, 1v1, or clan glads. In 1v1 competitive, do NOT use or recommend ultimate / Serious Mode / Rampage (G). Be specific about what you see.",
   referenceVods: [
     {
       id: "pcBVerfhZ6c",
@@ -119,7 +119,7 @@ const KNOWLEDGE = {
     "First line MUST be exactly: verified=true  OR  verified=false",
     "If verified=false: say why (wrong nametag / can't see name / wrong avatar) and stop — no full coach review.",
     "If verified=true: 3–6 concrete mistakes (mention what you saw on screen)",
-    "Call out TSBL rule breaks if visible (running, passive, illegal macros/tech, G/ultimate in 1v1, glad autowin causes)",
+    "Call out TSBCC rule breaks if visible (running, passive, illegal macros/tech, G/ultimate in 1v1, glad autowin causes)",
     "What to drill next session (short, specific)",
     "One thing they already do well",
   ],
@@ -148,7 +148,7 @@ function knowledgePrompt() {
     "Pro / stage lessons:",
     ...KNOWLEDGE.proLessons.map((l) => `- ${l}`),
     "",
-    "TSBL clan / glads / autowin (memorize — this is official):",
+    "TSBCC clan / glads / autowin (memorize — this is official):",
     ...KNOWLEDGE.leagueOps.map((l) => `- ${l}`),
     "",
     tsblPromptBlock("es"),
