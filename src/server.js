@@ -66,25 +66,55 @@ function createApp() {
     });
   });
 
-  // Proxies Discord avatars (forces .gif for animated) so the website never gets blank PFPs
-  app.get("/api/public/avatar/:userId", async (req, res) => {
+  // Public user card so the website can load GIF PFPs from Discord CDN (proxying GIFs often 404s)
+  app.get("/api/public/user/:userId", async (req, res) => {
     const { discordAvatarUrl, forceGifIfAnimated } = require("./lib/discordUser");
     const userId = String(req.params.userId || "").trim();
     try {
       const user = await require("./botBridge").fetchUser(userId);
-      let url = forceGifIfAnimated(user?.avatar) || discordAvatarUrl(userId, user?.avatarHash, 256);
-      if (!url) url = discordAvatarUrl(userId, null, 256);
-
-      const img = await fetch(url, { redirect: "follow" });
-      if (!img.ok) {
-        return res.redirect(302, discordAvatarUrl(userId, null, 256));
-      }
-      const type = img.headers.get("content-type") || "image/gif";
-      const buf = Buffer.from(await img.arrayBuffer());
-      res.setHeader("Content-Type", type);
-      res.setHeader("Cache-Control", "public, max-age=600");
-      return res.send(buf);
+      res.setHeader("Cache-Control", "public, max-age=60");
+      res.json({
+        id: user?.id || userId,
+        username: user?.username || null,
+        avatar: forceGifIfAnimated(user?.avatar) || discordAvatarUrl(userId, user?.avatarHash, 256),
+        avatarHash: user?.avatarHash || null,
+        animated: !!(user?.avatarHash && String(user.avatarHash).startsWith("a_")),
+      });
     } catch {
+      res.setHeader("Cache-Control", "no-store");
+      res.json({
+        id: userId,
+        username: null,
+        avatar: discordAvatarUrl(userId, null, 256),
+        avatarHash: null,
+        animated: false,
+      });
+    }
+  });
+
+  // Proxies Discord avatars. Prefer CDN URLs from /api/public/user — GIFs often fail when fetched server-side.
+  app.get("/api/public/avatar/:userId", async (req, res) => {
+    const { discordAvatarUrl, forceGifIfAnimated, avatarCandidateUrls } = require("./lib/discordUser");
+    const userId = String(req.params.userId || "").trim();
+    try {
+      const user = await require("./botBridge").fetchUser(userId);
+      const urls = avatarCandidateUrls(userId, user);
+      const fromUser = forceGifIfAnimated(user?.avatar);
+      if (fromUser) urls.unshift(fromUser);
+      const unique = [...new Set(urls.filter(Boolean))];
+      for (const url of unique) {
+        const img = await fetch(url, { redirect: "follow" }).catch(() => null);
+        if (!img?.ok) continue;
+        const type = img.headers.get("content-type") || "image/gif";
+        const buf = Buffer.from(await img.arrayBuffer());
+        res.setHeader("Content-Type", type);
+        res.setHeader("Cache-Control", "public, max-age=120");
+        return res.send(buf);
+      }
+      res.setHeader("Cache-Control", "no-store");
+      return res.redirect(302, discordAvatarUrl(userId, null, 256));
+    } catch {
+      res.setHeader("Cache-Control", "no-store");
       return res.redirect(302, discordAvatarUrl(userId, null, 256));
     }
   });

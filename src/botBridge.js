@@ -212,7 +212,7 @@ async function fetchUser(userId) {
     if (remote?.avatar) remote.avatar = forceGifIfAnimated(remote.avatar);
     return remote;
   }
-  const user = await c.users.fetch(userId);
+  const user = await c.users.fetch(userId, { force: true });
   return publicUser(user, 256);
 }
 
