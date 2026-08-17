@@ -3,6 +3,19 @@ const bridge = require("../botBridge");
 
 const ADMIN = 0x8n;
 const MANAGE_GUILD = 0x20n;
+const MANAGE_CHANNELS = 0x10n;
+const MANAGE_ROLES = 0x10000000n;
+
+function isDiscordAdmin(guild) {
+  if (guild?.owner) return true;
+  try {
+    const perms = BigInt(guild.permissions || 0);
+    return (perms & (ADMIN | MANAGE_GUILD | MANAGE_ROLES | MANAGE_CHANNELS)) !== 0n;
+  } catch {
+    return false;
+  }
+}
+
 const cache = new Map();
 
 function inviteUrl(guildId) {
@@ -21,16 +34,6 @@ function discordIcon(id, icon) {
   if (!icon) return null;
   const ext = String(icon).startsWith("a_") ? "gif" : "png";
   return `https://cdn.discordapp.com/icons/${id}/${icon}.${ext}?size=64`;
-}
-
-function isDiscordAdmin(guild) {
-  if (guild?.owner) return true;
-  try {
-    const perms = BigInt(guild.permissions || 0);
-    return (perms & ADMIN) === ADMIN || (perms & MANAGE_GUILD) === MANAGE_GUILD;
-  } catch {
-    return false;
-  }
 }
 
 async function fetchDiscordGuilds(accessToken) {
@@ -101,12 +104,17 @@ async function listDashboardGuilds(session) {
 }
 
 async function canConfigureGuild(session, guildId) {
-  const id = String(guildId || "");
+  const id = String(guildId || "").trim();
   if (!id || id === "network") return false;
-  // Bot owners can configure every server the bot is in — no Discord Admin required.
   if (isStaff(session?.id)) return true;
-  const guilds = await listDashboardGuilds(session);
-  return guilds.some((g) => g.id === id && g.botPresent);
+
+  // Discord Admin / Manage Server on that guild is enough — don't depend on a second bot-list fetch.
+  const adminGuilds = await userAdminGuilds(session).catch(() => []);
+  if (adminGuilds.some((g) => String(g.id) === id)) return true;
+
+  let botGuilds = await bridge.listGuildsAsync().catch(() => []);
+  if (!Array.isArray(botGuilds)) botGuilds = botGuilds?.guilds || [];
+  return botGuilds.some((g) => String(g.id) === id);
 }
 
 module.exports = {

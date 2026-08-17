@@ -49,7 +49,6 @@ function publicSnapshot(guildId) {
   const lb = leaderboard.getConfig(guildId);
   const lu = lineup.getConfig(guildId);
   const bl = blacklist.getList(guildId);
-  const tr = trainers.getList(guildId);
   const w = wars.getWars(guildId);
 
   const lineupBoards = Object.values(lu.regions || {}).map((region) => ({
@@ -73,7 +72,7 @@ function publicSnapshot(guildId) {
       regions: lineupBoards,
     },
     blacklist: bl.entries || [],
-    trainers: tr.trainers || [],
+    trainers: trainers.listAll(),
     wars: w.wars || [],
   };
 }

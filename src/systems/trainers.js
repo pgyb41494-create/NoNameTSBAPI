@@ -1,19 +1,38 @@
 const { createJsonStore } = require("../store/jsonStore");
 
 const store = createJsonStore("trainers.json", {});
+const NETWORK_ID = "network";
+
+function isNetwork(guildId) {
+  const id = String(guildId || "").trim();
+  return !id || id === NETWORK_ID;
+}
+
+function stripUser(db, discordId) {
+  const id = String(discordId);
+  for (const [guildId, bucket] of Object.entries(db)) {
+    db[guildId] = {
+      guildId,
+      trainers: (bucket?.trainers || []).filter((t) => String(t.discordId) !== id),
+    };
+  }
+}
 
 function getList(guildId) {
+  if (isNetwork(guildId)) return { guildId: NETWORK_ID, trainers: listAll() };
   const db = store.load();
   return db[guildId] || { guildId, trainers: [] };
 }
 
 function upsert(guildId, trainer) {
+  const scope = isNetwork(guildId) ? NETWORK_ID : String(guildId);
   let next = null;
   store.updateSync((db) => {
-    const current = db[guildId] || { guildId, trainers: [] };
+    if (scope === NETWORK_ID) stripUser(db, trainer.discordId);
+    const current = db[scope] || { guildId: scope, trainers: [] };
     const rest = current.trainers.filter((t) => String(t.discordId) !== String(trainer.discordId));
     next = {
-      guildId,
+      guildId: scope,
       trainers: [
         {
           discordId: String(trainer.discordId),
@@ -31,13 +50,20 @@ function upsert(guildId, trainer) {
         ...rest,
       ],
     };
-    db[guildId] = next;
+    db[scope] = next;
     return db;
   });
-  return next;
+  return scope === NETWORK_ID ? { guildId: NETWORK_ID, trainers: listAll() } : next;
 }
 
 function remove(guildId, discordId) {
+  if (isNetwork(guildId)) {
+    store.updateSync((db) => {
+      stripUser(db, discordId);
+      return db;
+    });
+    return { guildId: NETWORK_ID, trainers: listAll() };
+  }
   let next = null;
   store.updateSync((db) => {
     const current = db[guildId] || { guildId, trainers: [] };
@@ -51,7 +77,7 @@ function remove(guildId, discordId) {
   return next;
 }
 
-/** All trainers across every server (public network directory). */
+/** Public network directory — one row per Discord user. */
 function listAll() {
   const db = store.load();
   const rows = [];
