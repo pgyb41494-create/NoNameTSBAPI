@@ -176,6 +176,19 @@ function createApp() {
   bot.post("/challenges/:guildId/clear", (req, res) => {
     res.json(challenges.clearInvolving(req.params.guildId, req.body.userId || req.body.fromId));
   });
+  bot.get("/challenges/:guildId/dodges/:userId", (req, res) => {
+    res.json(challenges.getDodge(req.params.guildId, req.params.userId));
+  });
+  bot.post("/challenges/:guildId/dodge", (req, res) => {
+    try {
+      res.json(challenges.useDodge(req.params.guildId, req.body.userId));
+    } catch (err) {
+      res.status(400).json({ error: err.message, code: err.code });
+    }
+  });
+  bot.post("/challenges/:guildId/accept", (req, res) => {
+    res.json(challenges.acceptChallenge(req.params.guildId, req.body.fromId));
+  });
 
   bot.post("/wars/:guildId", (req, res) => res.json(wars.addWar(req.params.guildId, req.body || {})));
 
