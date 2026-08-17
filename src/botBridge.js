@@ -207,6 +207,7 @@ function publicRole(role, guildId) {
     position: role.position,
     managed: !!role.managed,
     everyone: role.id === guildId,
+    hoisted: !!role.hoist,
   };
 }
 
