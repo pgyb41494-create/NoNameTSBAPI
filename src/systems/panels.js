@@ -197,6 +197,30 @@ function remove(guildId, panelKey) {
   return { ok: true };
 }
 
+function dump(guildId) {
+  const cfg = getGuild(guildId);
+  return { panels: cfg.panels, panelAliases: cfg.panelAliases };
+}
+
+function replaceAll(guildId, next = {}) {
+  const aliases = next.panelAliases && typeof next.panelAliases === "object" ? next.panelAliases : {};
+  const incoming = next.panels;
+  const map = {};
+  if (Array.isArray(incoming)) {
+    for (const panel of incoming) {
+      const key = panel?.key ? sanitizeKey(panel.key) : "";
+      if (!key) continue;
+      map[key] = normalizePanel(panel);
+    }
+  } else if (incoming && typeof incoming === "object") {
+    for (const [key, panel] of Object.entries(incoming)) {
+      map[sanitizeKey(key) || key] = normalizePanel(panel || {});
+    }
+  }
+  saveGuild(guildId, { panels: map, panelAliases: aliases });
+  return list(guildId);
+}
+
 function parseColor(value) {
   if (value == null || value === "") return 0x5865f2;
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -254,5 +278,7 @@ module.exports = {
   create,
   update,
   remove,
+  dump,
+  replaceAll,
   buildDiscordPayload,
 };

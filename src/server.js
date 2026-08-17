@@ -245,7 +245,7 @@ function createApp() {
   bot.get("/player/:guildId/:userId", (req, res) => res.json(snapshot.playerBundle(req.params.guildId, req.params.userId)));
   bot.post("/guilds/:guildId", (req, res) => res.json(guilds.updateGuild(req.params.guildId, req.body || {})));
 
-  bot.get("/panels/:guildId", (req, res) => res.json(panels.map(req.params.guildId)));
+  bot.get("/panels/:guildId", (req, res) => res.json({ panels: panels.list(req.params.guildId) }));
   bot.get("/panels/:guildId/:panelKey", (req, res) => {
     const panel = panels.get(req.params.guildId, req.params.panelKey);
     if (!panel) return res.status(404).json({ error: "Panel not found" });

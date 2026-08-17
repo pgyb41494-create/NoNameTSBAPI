@@ -27,6 +27,14 @@ function fail(res, err) {
   return res.status(status).json({ error: err.message || "Request failed" });
 }
 
+async function syncPanelsToBot(guildId) {
+  try {
+    await bridge.replacePanels(guildId, panels.dump(guildId));
+  } catch {
+    // Bot HTTP may be briefly down; /panel will still pull from the API.
+  }
+}
+
 /** Prefer the guild the staff picked in the dashboard; fall back to network scope. */
 function resolveStaffGuildId(bodyGuildId) {
   const picked = String(bodyGuildId || "").trim();
@@ -281,6 +289,7 @@ function mountStaff(app) {
         return res.status(403).json({ error: "You cannot configure that server." });
       }
       res.json({ panels: panels.list(req.params.guildId) });
+      syncPanelsToBot(req.params.guildId).catch(() => {});
     } catch (err) {
       fail(res, err);
     }
@@ -304,7 +313,9 @@ function mountStaff(app) {
       if (!(await canConfigureGuild(req.user, req.params.guildId))) {
         return res.status(403).json({ error: "You cannot configure that server." });
       }
-      res.json({ panel: panels.create(req.params.guildId, req.body || {}) });
+      const created = panels.create(req.params.guildId, req.body || {});
+      await syncPanelsToBot(req.params.guildId);
+      res.json({ panel: created });
     } catch (err) {
       fail(res, err);
     }
@@ -315,7 +326,9 @@ function mountStaff(app) {
       if (!(await canConfigureGuild(req.user, req.params.guildId))) {
         return res.status(403).json({ error: "You cannot configure that server." });
       }
-      res.json({ panel: panels.update(req.params.guildId, req.params.panelKey, req.body || {}) });
+      const updated = panels.update(req.params.guildId, req.params.panelKey, req.body || {});
+      await syncPanelsToBot(req.params.guildId);
+      res.json({ panel: updated });
     } catch (err) {
       fail(res, err);
     }
@@ -326,7 +339,9 @@ function mountStaff(app) {
       if (!(await canConfigureGuild(req.user, req.params.guildId))) {
         return res.status(403).json({ error: "You cannot configure that server." });
       }
-      res.json(panels.remove(req.params.guildId, req.params.panelKey));
+      const removed = panels.remove(req.params.guildId, req.params.panelKey);
+      await syncPanelsToBot(req.params.guildId);
+      res.json(removed);
     } catch (err) {
       fail(res, err);
     }
