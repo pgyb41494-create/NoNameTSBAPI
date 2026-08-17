@@ -21,6 +21,7 @@ const coach = require("./systems/coach");
 const guilds = require("./systems/guilds");
 const { mountAuth, websiteUrl } = require("./auth");
 const { mountStaff } = require("./staff");
+const panels = require("./systems/panels");
 
 function botAuth(req, res, next) {
   const token = process.env.API_TOKEN;
@@ -213,6 +214,13 @@ function createApp() {
   bot.get("/snapshot/:guildId", (req, res) => res.json(snapshot.publicSnapshot(req.params.guildId)));
   bot.get("/player/:guildId/:userId", (req, res) => res.json(snapshot.playerBundle(req.params.guildId, req.params.userId)));
   bot.post("/guilds/:guildId", (req, res) => res.json(guilds.updateGuild(req.params.guildId, req.body || {})));
+
+  bot.get("/panels/:guildId", (req, res) => res.json(panels.map(req.params.guildId)));
+  bot.get("/panels/:guildId/:panelKey", (req, res) => {
+    const panel = panels.get(req.params.guildId, req.params.panelKey);
+    if (!panel) return res.status(404).json({ error: "Panel not found" });
+    res.json(panel);
+  });
 
   app.use("/api/bot", bot);
   return app;

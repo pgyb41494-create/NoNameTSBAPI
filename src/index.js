@@ -19,6 +19,7 @@ module.exports = {
   wars: require("./systems/wars"),
   reports: require("./systems/reports"),
   snapshot: require("./systems/snapshot"),
+  panels: require("./systems/panels"),
   botBridge: require("./botBridge"),
   coach: require("./systems/coach"),
   cards: require("./lib/cards"),

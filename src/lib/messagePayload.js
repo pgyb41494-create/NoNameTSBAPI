@@ -9,7 +9,7 @@ function parseColor(value) {
   return parseInt(hex, 16);
 }
 
-function buildMessagePayload({ content, embed, embeds } = {}) {
+function buildMessagePayload({ content, embed, embeds, components } = {}) {
   const text = content != null ? String(content).trim() : "";
   const payload = {};
 
@@ -42,10 +42,11 @@ function buildMessagePayload({ content, embed, embeds } = {}) {
     const url = embed.url != null ? String(embed.url).trim() : "";
     const color = parseColor(embed.color);
 
-    if (title || description || image || thumbnail) {
+    if (title || description || image || thumbnail || footer || color != null) {
       const apiEmbed = {};
       if (title) apiEmbed.title = title.slice(0, 256);
       if (description) apiEmbed.description = description.slice(0, 4096);
+      else if (!title && !image && !thumbnail) apiEmbed.description = "\u200b";
       if (color != null) apiEmbed.color = color;
       if (footer) apiEmbed.footer = { text: footer.slice(0, 2048) };
       if (image) apiEmbed.image = { url: image };
@@ -53,6 +54,10 @@ function buildMessagePayload({ content, embed, embeds } = {}) {
       if (url) apiEmbed.url = url;
       payload.embeds = [apiEmbed];
     }
+  }
+
+  if (Array.isArray(components) && components.length) {
+    payload.components = components.slice(0, 5);
   }
 
   if (!payload.content && !payload.embeds?.length) {
