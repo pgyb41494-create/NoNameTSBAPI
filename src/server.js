@@ -23,6 +23,7 @@ const { mountAuth, websiteUrl } = require("./auth");
 const { mountStaff } = require("./staff");
 const panels = require("./systems/panels");
 const { notifyBoardRefresh } = require("./lib/boardNotify");
+const { notifyStaffAlert } = require("./lib/alertNotify");
 
 function stripBotMeta(body = {}) {
   const { skipBoardRefresh, ...rest } = body || {};
@@ -148,13 +149,48 @@ function createApp() {
   const bot = express.Router();
   bot.use(botAuth);
 
+  bot.get("/profiles/:guildId/duplicates", (req, res) => {
+    if (req.query.robloxId) {
+      res.json({
+        matches: profiles.findDuplicateRoblox(
+          req.params.guildId,
+          req.query.robloxId,
+          req.query.exclude || null
+        ),
+      });
+      return;
+    }
+    res.json({ groups: profiles.listDuplicateRobloxGroups(req.params.guildId) });
+  });
+
   bot.get("/profiles/:guildId/:userId", (req, res) => {
     res.json(profiles.getProfile(req.params.guildId, req.params.userId) || null);
   });
   bot.post("/profiles/:guildId/:userId", (req, res) => {
     const { data, skipBoardRefresh } = stripBotMeta(req.body);
+    const before = profiles.getProfile(req.params.guildId, req.params.userId);
     const saved = profiles.saveProfile(req.params.guildId, req.params.userId, data);
     if (!skipBoardRefresh) notifyBoardRefresh(req.params.guildId, req.params.userId);
+    const isNew = !before?.verified_at && saved?.verified_at;
+    const robloxChanged =
+      saved?.roblox_id && String(saved.roblox_id) !== String(before?.roblox_id || "");
+    if ((isNew || robloxChanged) && !skipBoardRefresh) {
+      notifyStaffAlert(req.params.guildId, "profile", {
+        discordId: req.params.userId,
+        roblox_username: saved.roblox_username,
+        region: saved.region,
+        country: saved.country,
+      });
+    }
+    const dupes = profiles.findDuplicateRoblox(req.params.guildId, saved?.roblox_id, req.params.userId);
+    if (dupes.length) {
+      notifyStaffAlert(req.params.guildId, "duplicateRoblox", {
+        primaryDiscordId: req.params.userId,
+        robloxId: saved.roblox_id,
+        robloxUsername: saved.roblox_username,
+        others: dupes,
+      });
+    }
     res.json(saved);
   });
   bot.delete("/profiles/:guildId/:userId", (req, res) => {
@@ -188,6 +224,11 @@ function createApp() {
   bot.post("/ranking/:guildId/stage", (req, res) => {
     const result = ranking.setStage(req.params.guildId, req.body.userId, req.body.stage, req.body.moderatorId);
     notifyBoardRefresh(req.params.guildId, req.body.userId);
+    notifyStaffAlert(req.params.guildId, "phase", {
+      targetId: req.body.userId,
+      stage: req.body.stage,
+      actorId: req.body.moderatorId,
+    });
     res.json(result);
   });
 
@@ -196,6 +237,13 @@ function createApp() {
     const result = score.recordMatch(req.params.guildId, body);
     notifyBoardRefresh(req.params.guildId, body.winnerId);
     notifyBoardRefresh(req.params.guildId, body.loserId);
+    notifyStaffAlert(req.params.guildId, "score", {
+      winnerId: body.winnerId,
+      loserId: body.loserId,
+      score: body.score,
+      region: body.region,
+      recorderId: body.refereeIds?.[0] || null,
+    });
     res.json(result);
   });
   bot.get("/score/:guildId/:userId", (req, res) => res.json(score.getRecord(req.params.guildId, req.params.userId)));
@@ -224,6 +272,10 @@ function createApp() {
       const result = challenges.createChallenge(req.params.guildId, req.body.fromId, req.body.targetId);
       notifyBoardRefresh(req.params.guildId, req.body.fromId);
       notifyBoardRefresh(req.params.guildId, req.body.targetId);
+      notifyStaffAlert(req.params.guildId, "challenge", {
+        fromId: req.body.fromId,
+        targetId: req.body.targetId,
+      });
       res.json(result);
     } catch (err) {
       res.status(400).json({ error: err.message });

@@ -300,6 +300,27 @@ async function replacePanels(guildId, body) {
   return remoteDiscord(`/discord/guilds/${guildId}/panels`, { method: "PUT", body: body || {} });
 }
 
+async function postStaffAlert(guildId, event, payload = {}) {
+  return remoteDiscord(`/discord/guilds/${guildId}/alerts/post`, {
+    method: "POST",
+    body: { event: String(event), ...payload },
+  });
+}
+
+function postStaffAlertBackground(guildId, event, payload) {
+  postStaffAlert(guildId, event, payload).catch((err) => {
+    console.warn("[botBridge] staff alert failed:", err.message);
+  });
+}
+
+async function getStaffAlertsConfig(guildId) {
+  return remoteDiscord(`/discord/guilds/${guildId}/alerts`);
+}
+
+async function setStaffAlertsConfig(guildId, body) {
+  return remoteDiscord(`/discord/guilds/${guildId}/alerts`, { method: "PUT", body: body || {} });
+}
+
 async function refreshBoards(guildId, userId) {
   const body = userId ? { userId: String(userId) } : {};
   return remoteDiscord(`/discord/guilds/${guildId}/boards/refresh`, { method: "POST", body });
@@ -333,4 +354,8 @@ module.exports = {
   createChannel,
   refreshBoards,
   refreshBoardsBackground,
+  postStaffAlert,
+  postStaffAlertBackground,
+  getStaffAlertsConfig,
+  setStaffAlertsConfig,
 };

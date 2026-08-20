@@ -129,6 +129,30 @@ function findByRoblox(guildId, query) {
   );
 }
 
+function profilesForGuild(guildId) {
+  return allProfiles().filter((p) => !guildId || p.guild_id === guildId || !p.guild_id);
+}
+
+function findDuplicateRoblox(guildId, robloxId, excludeDiscordId = null) {
+  if (!robloxId) return [];
+  const id = String(robloxId);
+  const exclude = excludeDiscordId ? String(excludeDiscordId) : null;
+  return profilesForGuild(guildId).filter(
+    (p) => p.roblox_id && String(p.roblox_id) === id && String(p.discord_id) !== exclude
+  );
+}
+
+function listDuplicateRobloxGroups(guildId) {
+  const groups = new Map();
+  for (const profile of profilesForGuild(guildId)) {
+    if (!profile.roblox_id) continue;
+    const key = String(profile.roblox_id);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(profile);
+  }
+  return [...groups.values()].filter((rows) => rows.length > 1);
+}
+
 function saveProfile(guildId, discordId, updates) {
   const { skipBoardRefresh, ...patch } = updates || {};
   let saved = null;
@@ -182,6 +206,9 @@ module.exports = {
   store,
   getProfile,
   findByRoblox,
+  findDuplicateRoblox,
+  listDuplicateRobloxGroups,
+  profilesForGuild,
   saveProfile,
   deleteProfile,
   allProfiles,

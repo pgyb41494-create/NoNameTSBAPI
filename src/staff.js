@@ -291,6 +291,28 @@ function mountStaff(app) {
     }
   });
 
+  r.get("/:guildId/alerts", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.getStaffAlertsConfig(req.params.guildId));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.put("/:guildId/alerts", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.setStaffAlertsConfig(req.params.guildId, req.body || {}));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
   r.get("/:guildId/panels", async (req, res) => {
     try {
       if (!(await canConfigureGuild(req.user, req.params.guildId))) {
