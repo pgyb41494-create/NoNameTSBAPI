@@ -413,6 +413,22 @@ function mountStaff(app) {
     }
   });
 
+  r.get("/:guildId/channels/:channelId/posts", requireStaff, async (req, res) => {
+    try {
+      res.json(await bridge.listForumPosts(req.params.guildId, req.params.channelId));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.post("/:guildId/channels/:channelId/posts", requireStaff, async (req, res) => {
+    try {
+      res.json(await bridge.createForumPost(req.params.guildId, req.params.channelId, req.body || {}));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
   r.get("/:guildId/channels/:channelId/typing", requireStaff, async (req, res) => {
     try {
       res.json(await bridge.getTyping(req.params.guildId, req.params.channelId));
