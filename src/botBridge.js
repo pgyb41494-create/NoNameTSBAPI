@@ -206,49 +206,7 @@ async function sendChannelMessage(guildId, channelId, contentOrPayload, maybeEmb
 }
 
 function publicMessage(message) {
-  const { userAvatarFromDiscord } = require("./lib/discordUser");
-  const author = message.author;
-  return {
-    id: String(message.id),
-    content: message.content || "",
-    createdAt: message.createdAt?.toISOString?.() || null,
-    editedAt: message.editedAt?.toISOString?.() || null,
-    author: {
-      id: String(author?.id || ""),
-      username: author?.username || "unknown",
-      displayName: message.member?.displayName || author?.globalName || author?.username || "unknown",
-      avatar: author ? userAvatarFromDiscord(author, 64) : null,
-      bot: !!author?.bot,
-    },
-    embeds: (message.embeds || []).slice(0, 10).map((embed) => {
-      try {
-        return typeof embed.toJSON === "function" ? embed.toJSON() : embed;
-      } catch {
-        return {
-          title: embed.title || null,
-          description: embed.description || null,
-          color: embed.color ?? null,
-          url: embed.url || null,
-          footer: embed.footer || null,
-          image: embed.image || null,
-          thumbnail: embed.thumbnail || null,
-        };
-      }
-    }),
-    attachments: [...(message.attachments?.values?.() || [])].map((file) => ({
-      id: String(file.id),
-      name: file.name,
-      url: file.url,
-      contentType: file.contentType || null,
-      width: file.width || null,
-      height: file.height || null,
-    })),
-    mentions: [...(message.mentions?.users?.values?.() || [])].map((user) => ({
-      id: String(user.id),
-      username: user.username,
-      displayName: user.globalName || user.username,
-    })),
-  };
+  return require("./lib/publicMessage").publicMessage(message);
 }
 
 async function listChannelMessages(guildId, channelId, { limit = 50, before = null } = {}) {
