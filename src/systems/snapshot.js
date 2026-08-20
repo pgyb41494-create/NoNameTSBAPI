@@ -8,17 +8,26 @@ const blacklist = require("./blacklist");
 const trainers = require("./trainers");
 const wars = require("./wars");
 const { buildCardModel } = require("../lib/cards");
+const { regionLabel } = require("../lib/regions");
 const { brand } = require("../brand");
+
+function isOnCooldown(playerState) {
+  if (!playerState?.cooldownUntil) return false;
+  const until = new Date(playerState.cooldownUntil).getTime();
+  return Number.isFinite(until) && until > Date.now();
+}
 
 function playerBundle(guildId, discordId) {
   const profile = profiles.getProfile(guildId, discordId);
   const record = score.getRecord(guildId, discordId);
   const stage = ranking.getStage(guildId, discordId);
   const challengeStatus = challenges.statusFor(guildId, discordId);
+  const playerState = score.getPlayerState(guildId, discordId);
   return {
     discordId,
     profileId: profile?.profile_id || null,
     displayName: profile?.roblox_display_name || profile?.display_name || profile?.roblox_username,
+    discordTag: discordId ? `<@${discordId}>` : null,
     robloxUsername: profile?.roblox_username,
     robloxDisplayName: profile?.roblox_display_name,
     robloxId: profile?.roblox_id,
@@ -26,11 +35,12 @@ function playerBundle(guildId, discordId) {
     region: profile?.region,
     country: profile?.country || null,
     countryFlag: profile?.country_flag || null,
-    host: profile?.country || profile?.region || null,
+    host: profile?.region ? regionLabel(profile.region) : null,
     stage: stage || "Unranked",
     wins: record.wins || 0,
     losses: record.losses || 0,
     challengeStatus,
+    onCooldown: isOnCooldown(playerState),
     gifUrl: brand.defaultGif,
     hasProfile: !!profile,
   };
