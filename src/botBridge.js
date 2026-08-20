@@ -97,13 +97,15 @@ async function listChannels(guildId) {
   const guild = await c.guilds.fetch(guildId);
   const channels = await guild.channels.fetch();
   return [...channels.values()]
-    .filter((ch) => ch && (ch.type === 0 || ch.type === 5))
-    .sort((a, b) => (a.rawPosition ?? 0) - (b.rawPosition ?? 0))
+    .filter((ch) => ch && (ch.type === 0 || ch.type === 4 || ch.type === 5))
     .map((ch) => ({
       id: ch.id,
       name: ch.name,
-      type: ch.type === 5 ? "announcement" : "text",
-    }));
+      type: ch.type === 4 ? "category" : ch.type === 5 ? "announcement" : "text",
+      parentId: ch.parentId || null,
+      position: ch.rawPosition ?? ch.position ?? 0,
+    }))
+    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0) || a.name.localeCompare(b.name));
 }
 
 async function createChannel(guildId, body = {}) {
@@ -181,7 +183,96 @@ async function sendChannelMessage(guildId, channelId, contentOrPayload, maybeEmb
     throw Object.assign(new Error("Channel is not in that server."), { status: 400 });
   }
   const sent = await channel.send(payload);
-  return { id: sent.id, channelId: sent.channelId };
+  return publicMessage(sent);
+}
+
+function publicMessage(message) {
+  const { userAvatarFromDiscord } = require("./lib/discordUser");
+  const author = message.author;
+  return {
+    id: String(message.id),
+    content: message.content || "",
+    createdAt: message.createdAt?.toISOString?.() || null,
+    editedAt: message.editedAt?.toISOString?.() || null,
+    author: {
+      id: String(author?.id || ""),
+      username: author?.username || "unknown",
+      displayName: message.member?.displayName || author?.globalName || author?.username || "unknown",
+      avatar: author ? userAvatarFromDiscord(author, 64) : null,
+      bot: !!author?.bot,
+    },
+    embeds: (message.embeds || []).slice(0, 10).map((embed) => {
+      try {
+        return typeof embed.toJSON === "function" ? embed.toJSON() : embed;
+      } catch {
+        return {
+          title: embed.title || null,
+          description: embed.description || null,
+          color: embed.color ?? null,
+          url: embed.url || null,
+          footer: embed.footer || null,
+          image: embed.image || null,
+          thumbnail: embed.thumbnail || null,
+        };
+      }
+    }),
+    attachments: [...(message.attachments?.values?.() || [])].map((file) => ({
+      id: String(file.id),
+      name: file.name,
+      url: file.url,
+      contentType: file.contentType || null,
+      width: file.width || null,
+      height: file.height || null,
+    })),
+    mentions: [...(message.mentions?.users?.values?.() || [])].map((user) => ({
+      id: String(user.id),
+      username: user.username,
+      displayName: user.globalName || user.username,
+    })),
+  };
+}
+
+async function listChannelMessages(guildId, channelId, { limit = 50, before = null } = {}) {
+  const c = requireClient();
+  if (!c) {
+    const q = new URLSearchParams();
+    if (limit) q.set("limit", String(limit));
+    if (before) q.set("before", String(before));
+    const suffix = q.toString() ? `?${q}` : "";
+    return remoteDiscord(`/discord/guilds/${guildId}/channels/${channelId}/messages${suffix}`);
+  }
+  const channel = await c.channels.fetch(channelId);
+  if (!channel || !channel.isTextBased?.()) {
+    throw Object.assign(new Error("That channel cannot receive messages."), { status: 400 });
+  }
+  if (guildId && channel.guildId && String(channel.guildId) !== String(guildId)) {
+    throw Object.assign(new Error("Channel is not in that server."), { status: 400 });
+  }
+  const cap = Math.min(100, Math.max(1, Number(limit) || 50));
+  const fetched = await channel.messages.fetch({
+    limit: cap,
+    ...(before ? { before: String(before) } : {}),
+  });
+  const messages = [...fetched.values()]
+    .sort((a, b) => a.createdTimestamp - b.createdTimestamp)
+    .map(publicMessage);
+  return { messages };
+}
+
+async function triggerTyping(guildId, channelId) {
+  const c = requireClient();
+  if (!c) {
+    return remoteDiscord(`/discord/guilds/${guildId}/channels/${channelId}/typing`, { method: "POST", body: {} });
+  }
+  const channel = await c.channels.fetch(channelId);
+  if (!channel || !channel.isTextBased?.()) {
+    throw Object.assign(new Error("That channel cannot receive messages."), { status: 400 });
+  }
+  if (guildId && channel.guildId && String(channel.guildId) !== String(guildId)) {
+    throw Object.assign(new Error("Channel is not in that server."), { status: 400 });
+  }
+  await channel.sendTyping();
+  return { ok: true };
 }
 
 async function sendDirectMessage(userId, contentOrPayload, maybeEmbed) {
@@ -347,6 +438,8 @@ module.exports = {
   fetchUser,
   sendChannelMessage,
   sendDirectMessage,
+  listChannelMessages,
+  triggerTyping,
   getVerifyConfig,
   setVerifyConfig,
   getAuditConfig,

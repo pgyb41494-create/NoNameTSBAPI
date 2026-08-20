@@ -381,10 +381,41 @@ function mountStaff(app) {
 
   r.get("/:guildId/channels", async (req, res) => {
     try {
-      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+      if (!isStaff(req.user?.id) && !(await canConfigureGuild(req.user, req.params.guildId))) {
         return res.status(403).json({ error: "You cannot configure that server." });
       }
-      res.json({ channels: await bridge.listChannels(req.params.guildId) });
+      const list = await bridge.listChannels(req.params.guildId);
+      res.json({ channels: Array.isArray(list) ? list : list?.channels || [] });
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.get("/:guildId/channels/:channelId/messages", requireStaff, async (req, res) => {
+    try {
+      res.json(
+        await bridge.listChannelMessages(req.params.guildId, req.params.channelId, {
+          limit: req.query.limit,
+          before: req.query.before || null,
+        })
+      );
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.post("/:guildId/channels/:channelId/messages", requireStaff, async (req, res) => {
+    try {
+      const sent = await bridge.sendChannelMessage(req.params.guildId, req.params.channelId, req.body || {});
+      res.json({ ok: true, message: sent });
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.post("/:guildId/channels/:channelId/typing", requireStaff, async (req, res) => {
+    try {
+      res.json(await bridge.triggerTyping(req.params.guildId, req.params.channelId));
     } catch (err) {
       fail(res, err);
     }
