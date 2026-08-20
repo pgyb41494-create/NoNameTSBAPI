@@ -153,6 +153,37 @@ function listDuplicateRobloxGroups(guildId) {
   return [...groups.values()].filter((rows) => rows.length > 1);
 }
 
+function listNetworkDuplicateGroups() {
+  const byRoblox = new Map();
+  for (const profile of allProfiles()) {
+    if (!profile.roblox_id) continue;
+    const key = String(profile.roblox_id);
+    if (!byRoblox.has(key)) byRoblox.set(key, new Map());
+    const byDiscord = byRoblox.get(key);
+    const discordId = String(profile.discord_id);
+    if (!byDiscord.has(discordId)) byDiscord.set(discordId, []);
+    byDiscord.get(discordId).push(profile);
+  }
+  const groups = [];
+  for (const [robloxId, byDiscord] of byRoblox) {
+    if (byDiscord.size < 2) continue;
+    const accounts = [...byDiscord.entries()].map(([discordId, rows]) => ({
+      discordId,
+      displayName: rows[0].display_name,
+      robloxUsername: rows[0].roblox_username,
+      robloxId,
+      profileId: rows[0].profile_id,
+      guilds: [...new Set(rows.map((row) => row.guild_id).filter(Boolean))],
+    }));
+    groups.push({
+      robloxId,
+      robloxUsername: accounts[0].robloxUsername,
+      accounts,
+    });
+  }
+  return groups.sort((a, b) => b.accounts.length - a.accounts.length);
+}
+
 function saveProfile(guildId, discordId, updates) {
   const { skipBoardRefresh, ...patch } = updates || {};
   let saved = null;
@@ -208,6 +239,7 @@ module.exports = {
   findByRoblox,
   findDuplicateRoblox,
   listDuplicateRobloxGroups,
+  listNetworkDuplicateGroups,
   profilesForGuild,
   saveProfile,
   deleteProfile,

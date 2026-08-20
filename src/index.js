@@ -18,6 +18,7 @@ module.exports = {
   challenges: require("./systems/challenges"),
   wars: require("./systems/wars"),
   reports: require("./systems/reports"),
+  activity: require("./systems/activity"),
   snapshot: require("./systems/snapshot"),
   panels: require("./systems/panels"),
   botBridge: require("./botBridge"),

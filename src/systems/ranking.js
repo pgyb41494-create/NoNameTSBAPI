@@ -109,6 +109,23 @@ function getStage(guildId, userId) {
   return cfg.stages?.[String(userId)]?.text || null;
 }
 
+function listAllStages() {
+  const db = store.load();
+  const rows = [];
+  for (const [guildId, cfg] of Object.entries(db || {})) {
+    for (const [userId, stage] of Object.entries(cfg.stages || {})) {
+      rows.push({
+        guildId: String(guildId),
+        userId: String(userId),
+        text: stage?.text || null,
+        setBy: stage?.setBy || null,
+        at: stage?.at || null,
+      });
+    }
+  }
+  return rows;
+}
+
 module.exports = {
   defaultConfig,
   getConfig,
@@ -118,5 +135,6 @@ module.exports = {
   isSetupCompleted,
   setStage,
   getStage,
+  listAllStages,
   normalizeCommandName,
 };
