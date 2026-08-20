@@ -143,10 +143,11 @@ async function searchMembers(guildId, query = "") {
       return [...found.values()].map(publicMember);
     }
   }
-  await guild.members.fetch({ limit: 40 }).catch(() => {});
+  await guild.members.fetch({ limit: 100 }).catch(() => {});
   return [...guild.members.cache.values()]
     .filter((m) => !m.user.bot)
-    .slice(0, 40)
+    .sort((a, b) => String(a.displayName || "").localeCompare(String(b.displayName || "")))
+    .slice(0, 100)
     .map(publicMember);
 }
 
@@ -273,6 +274,15 @@ async function triggerTyping(guildId, channelId) {
   }
   await channel.sendTyping();
   return { ok: true };
+}
+
+async function getTyping(guildId, channelId) {
+  const c = requireClient();
+  if (!c) {
+    return remoteDiscord(`/discord/guilds/${guildId}/channels/${channelId}/typing`);
+  }
+  // Local client path is unused on the API service; typing lives on the bot process.
+  return { typing: [] };
 }
 
 async function sendDirectMessage(userId, contentOrPayload, maybeEmbed) {
@@ -440,6 +450,7 @@ module.exports = {
   sendDirectMessage,
   listChannelMessages,
   triggerTyping,
+  getTyping,
   getVerifyConfig,
   setVerifyConfig,
   getAuditConfig,

@@ -413,6 +413,14 @@ function mountStaff(app) {
     }
   });
 
+  r.get("/:guildId/channels/:channelId/typing", requireStaff, async (req, res) => {
+    try {
+      res.json(await bridge.getTyping(req.params.guildId, req.params.channelId));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
   r.post("/:guildId/channels/:channelId/typing", requireStaff, async (req, res) => {
     try {
       res.json(await bridge.triggerTyping(req.params.guildId, req.params.channelId));
