@@ -116,6 +116,17 @@ function resetConfig(guildId) {
   return updateConfig(guildId, defaultConfig(guildId));
 }
 
+function listAllMatches() {
+  const db = store.load();
+  const rows = [];
+  for (const [guildId, cfg] of Object.entries(db || {})) {
+    for (const match of cfg.matches || []) {
+      rows.push({ ...match, guildId: String(guildId) });
+    }
+  }
+  return rows.sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")));
+}
+
 module.exports = {
   getConfig,
   updateConfig,
@@ -125,5 +136,6 @@ module.exports = {
   setPlayerState,
   pushMatch,
   resetConfig,
+  listAllMatches,
   defaultConfig,
 };

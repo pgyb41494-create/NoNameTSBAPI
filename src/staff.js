@@ -11,6 +11,7 @@ const panels = require("./systems/panels");
 const activity = require("./systems/activity");
 const profiles = require("./systems/profiles");
 const ranking = require("./systems/ranking");
+const score = require("./systems/score");
 
 function loginAuth(req, res, next) {
   const user = readSession(req);
@@ -200,46 +201,54 @@ function mountStaff(app) {
     }
   }
 
+  async function networkData() {
+    const apiProfiles = profiles.allProfiles();
+    const apiStages = ranking.listAllStages();
+    const apiMatches = typeof score.listAllMatches === "function" ? score.listAllMatches() : [];
+    let bot = { profiles: [], stages: [], matches: [] };
+    try {
+      bot = await bridge.getNetworkSnapshot();
+    } catch {
+      bot = { profiles: [], stages: [], matches: [] };
+    }
+    const profileMap = new Map();
+    for (const p of [...apiProfiles, ...(bot.profiles || [])]) {
+      const key = `${p.guild_id || p.guildId || "global"}:${p.discord_id || p.discordId}`;
+      if (!profileMap.has(key)) profileMap.set(key, p);
+    }
+    const stageMap = new Map();
+    for (const row of [...apiStages, ...(bot.stages || [])]) {
+      const key = `${row.guildId}:${row.userId}`;
+      const prev = stageMap.get(key);
+      if (!prev || String(row.at || "") > String(prev.at || "")) stageMap.set(key, row);
+    }
+    const matchMap = new Map();
+    for (const match of [...apiMatches, ...(bot.matches || [])]) {
+      const key = `${match.guildId}:${match.id || `${match.winnerId}-${match.at}`}`;
+      if (!matchMap.has(key)) matchMap.set(key, match);
+    }
+    return {
+      profiles: [...profileMap.values()],
+      stages: [...stageMap.values()],
+      matches: [...matchMap.values()],
+    };
+  }
+
   r.get("/activity", requireStaff, async (req, res) => {
     try {
       const names = await guildNameMap();
-      const live = activity.list({
-        event: req.query.event || null,
-        guildId: req.query.guildId || null,
-        limit: 500,
-      });
-      const historical = [];
-      for (const profile of profiles.allProfiles()) {
-        if (!profile.roblox_username && !profile.verified_at) continue;
-        historical.push({
-          id: `hist-profile-${profile.guild_id || "global"}-${profile.discord_id}`,
-          at: profile.verified_at || profile.created_at || profile.updated_at,
-          guildId: String(profile.guild_id || "global"),
-          event: "profile",
-          title: "Profile registered",
-          summary: `${profile.discord_id} linked ${profile.roblox_username || "a Roblox account"}`,
-          payload: {
-            discordId: profile.discord_id,
-            roblox_username: profile.roblox_username,
-            region: profile.region,
-            country: profile.country,
-          },
-        });
-      }
-      for (const row of ranking.listAllStages()) {
-        historical.push({
-          id: `hist-phase-${row.guildId}-${row.userId}`,
-          at: row.at,
-          guildId: row.guildId,
-          event: "phase",
-          title: "Rank updated",
-          summary: `${row.userId} → ${row.text || "?"}${row.setBy ? ` by ${row.setBy}` : ""}`,
-          payload: { targetId: row.userId, stage: row.text, actorId: row.setBy },
-        });
-      }
-      const merged = activity.mergeWithHistorical(live, historical)
+      const live = activity.list({ limit: 500 });
+      const data = await networkData();
+      const historical = activity.historicalFromData(data);
+      const merged = activity
+        .mergeWithHistorical(live, historical)
         .filter((row) => !req.query.event || row.event === req.query.event)
-        .filter((row) => !req.query.guildId || req.query.guildId === "network" || String(row.guildId) === String(req.query.guildId))
+        .filter(
+          (row) =>
+            !req.query.guildId ||
+            req.query.guildId === "network" ||
+            String(row.guildId) === String(req.query.guildId)
+        )
         .slice(0, 300)
         .map((row) => ({
           ...row,
@@ -254,14 +263,45 @@ function mountStaff(app) {
   r.get("/duplicates", requireStaff, async (req, res) => {
     try {
       const names = await guildNameMap();
-      const groups = profiles.listNetworkDuplicateGroups().map((group) => ({
-        ...group,
-        accounts: group.accounts.map((account) => ({
-          ...account,
-          guildNames: (account.guilds || []).map((id) => names[String(id)] || id),
+      const data = await networkData();
+      const byRoblox = new Map();
+      for (const profile of data.profiles) {
+        const robloxId = profile.roblox_id || profile.robloxId;
+        if (!robloxId) continue;
+        const key = String(robloxId);
+        if (!byRoblox.has(key)) byRoblox.set(key, new Map());
+        const byDiscord = byRoblox.get(key);
+        const discordId = String(profile.discord_id || profile.discordId);
+        if (!byDiscord.has(discordId)) byDiscord.set(discordId, []);
+        byDiscord.get(discordId).push(profile);
+      }
+      const groups = [];
+      for (const [robloxId, byDiscord] of byRoblox) {
+        if (byDiscord.size < 2) continue;
+        const accounts = [...byDiscord.entries()].map(([discordId, rows]) => ({
+          discordId,
+          displayName: rows[0].display_name || rows[0].displayName,
+          robloxUsername: rows[0].roblox_username || rows[0].robloxUsername,
+          robloxId,
+          profileId: rows[0].profile_id || rows[0].profileId,
+          guilds: [...new Set(rows.map((row) => row.guild_id || row.guildId).filter(Boolean))],
+        }));
+        groups.push({
+          robloxId,
+          robloxUsername: accounts[0].robloxUsername,
+          accounts,
+        });
+      }
+      groups.sort((a, b) => b.accounts.length - a.accounts.length);
+      res.json({
+        groups: groups.map((group) => ({
+          ...group,
+          accounts: group.accounts.map((account) => ({
+            ...account,
+            guildNames: (account.guilds || []).map((id) => names[String(id)] || id),
+          })),
         })),
-      }));
-      res.json({ groups });
+      });
     } catch (err) {
       fail(res, err);
     }
@@ -270,24 +310,31 @@ function mountStaff(app) {
   r.get("/roster", requireStaff, async (req, res) => {
     try {
       const names = await guildNameMap();
-      const players = profiles
-        .allProfiles()
-        .filter((p) => p.roblox_id || p.verified_at || p.roblox_username)
-        .map((p) => ({
-          discordId: p.discord_id,
-          displayName: p.display_name,
-          robloxUsername: p.roblox_username,
-          robloxId: p.roblox_id,
-          profileId: p.profile_id,
-          guildId: p.guild_id,
-          guildName: names[String(p.guild_id)] || p.guild_id || "—",
-          region: p.region,
-          country: p.country,
-          rank: p.guild_id ? ranking.getStage(p.guild_id, p.discord_id) : null,
-          createdAt: p.created_at,
-          updatedAt: p.updated_at,
-          verifiedAt: p.verified_at,
-        }))
+      const data = await networkData();
+      const stageLookup = new Map(
+        data.stages.map((row) => [`${row.guildId}:${row.userId}`, row.text || null])
+      );
+      const players = data.profiles
+        .filter((p) => p.roblox_id || p.robloxId || p.verified_at || p.roblox_username || p.robloxUsername)
+        .map((p) => {
+          const guildId = p.guild_id || p.guildId;
+          const discordId = p.discord_id || p.discordId;
+          return {
+            discordId,
+            displayName: p.display_name || p.displayName,
+            robloxUsername: p.roblox_username || p.robloxUsername,
+            robloxId: p.roblox_id || p.robloxId,
+            profileId: p.profile_id || p.profileId,
+            guildId,
+            guildName: names[String(guildId)] || guildId || "—",
+            region: p.region,
+            country: p.country,
+            rank: stageLookup.get(`${guildId}:${discordId}`) || null,
+            createdAt: p.created_at || p.createdAt,
+            updatedAt: p.updated_at || p.updatedAt,
+            verifiedAt: p.verified_at || p.verifiedAt,
+          };
+        })
         .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
       res.json({ players });
     } catch (err) {

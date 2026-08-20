@@ -332,6 +332,10 @@ function refreshBoardsBackground(guildId, userId) {
   });
 }
 
+async function getNetworkSnapshot() {
+  return remoteDiscord("/discord/network/snapshot");
+}
+
 module.exports = {
   setClient,
   getClient,
@@ -358,4 +362,5 @@ module.exports = {
   postStaffAlertBackground,
   getStaffAlertsConfig,
   setStaffAlertsConfig,
+  getNetworkSnapshot,
 };

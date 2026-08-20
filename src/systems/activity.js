@@ -38,7 +38,7 @@ function mention(id) {
 
 function summarize(event, payload = {}) {
   if (event === "profile") {
-    return `${mention(payload.discordId)} linked ${payload.roblox_username || "a Roblox account"}`;
+    return `${mention(payload.discordId)} linked ${payload.roblox_username || payload.robloxUsername || "a Roblox account"}`;
   }
   if (event === "phase") {
     const by = payload.actorId ? ` by ${mention(payload.actorId)}` : "";
@@ -97,13 +97,100 @@ function eventKey(row) {
     payload.winnerId ||
     payload.fromId ||
     "";
-  return `${row.event}:${row.guildId}:${subject}`;
+  return `${row.event}:${row.guildId}:${subject}:${row.at || ""}`;
 }
 
 function mergeWithHistorical(live, historical) {
-  const seen = new Set(live.map(eventKey));
-  const extra = historical.filter((row) => !seen.has(eventKey(row)));
-  return [...live, ...extra].sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")));
+  const seen = new Set();
+  const out = [];
+  for (const row of [...live, ...historical]) {
+    const key = eventKey(row);
+    if (seen.has(key)) continue;
+    // Collapse live + historical copies of the same profile/rank subject
+    if (row.event === "profile" || row.event === "phase") {
+      const soft =
+        `${row.event}:${row.guildId}:` +
+        (row.payload?.discordId || row.payload?.targetId || row.id);
+      if (seen.has(soft)) continue;
+      seen.add(soft);
+    }
+    seen.add(key);
+    out.push(row);
+  }
+  return out.sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")));
 }
 
-module.exports = { record, list, mergeWithHistorical, TITLES };
+function historicalFromData({ profiles = [], stages = [], matches = [] } = {}) {
+  const historical = [];
+  for (const profile of profiles) {
+    if (!profile?.roblox_username && !profile?.roblox_id && !profile?.verified_at && !profile?.profile_id) {
+      continue;
+    }
+    const guildId = String(profile.guild_id || profile.guildId || "global");
+    const discordId = String(profile.discord_id || profile.discordId || "");
+    if (!discordId) continue;
+    historical.push({
+      id: `hist-profile-${guildId}-${discordId}`,
+      at: profile.verified_at || profile.created_at || profile.updated_at || null,
+      guildId,
+      event: "profile",
+      title: "Profile registered",
+      summary: summarize("profile", {
+        discordId,
+        roblox_username: profile.roblox_username || profile.robloxUsername,
+      }),
+      payload: {
+        discordId,
+        roblox_username: profile.roblox_username || profile.robloxUsername || null,
+        region: profile.region || null,
+        country: profile.country || null,
+      },
+    });
+  }
+  for (const row of stages) {
+    const guildId = String(row.guildId || "");
+    const userId = String(row.userId || "");
+    if (!guildId || !userId) continue;
+    historical.push({
+      id: `hist-phase-${guildId}-${userId}`,
+      at: row.at || null,
+      guildId,
+      event: "phase",
+      title: "Rank updated",
+      summary: summarize("phase", { targetId: userId, stage: row.text, actorId: row.setBy }),
+      payload: { targetId: userId, stage: row.text, actorId: row.setBy },
+    });
+  }
+  for (const match of matches) {
+    const guildId = String(match.guildId || "");
+    if (!guildId || !match.winnerId || !match.loserId) continue;
+    historical.push({
+      id: `hist-score-${guildId}-${match.id || `${match.winnerId}-${match.at}`}`,
+      at: match.at || null,
+      guildId,
+      event: "score",
+      title: "Match scored",
+      summary: summarize("score", {
+        winnerId: match.winnerId,
+        loserId: match.loserId,
+        score: match.score,
+      }),
+      payload: {
+        winnerId: match.winnerId,
+        loserId: match.loserId,
+        score: match.score,
+        region: match.region || null,
+        recorderId: match.refereeIds?.[0] || null,
+      },
+    });
+  }
+  return historical;
+}
+
+module.exports = {
+  record,
+  list,
+  mergeWithHistorical,
+  historicalFromData,
+  TITLES,
+};

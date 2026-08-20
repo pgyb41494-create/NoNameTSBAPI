@@ -149,6 +149,13 @@ function createApp() {
   const bot = express.Router();
   bot.use(botAuth);
 
+  bot.post("/activity", (req, res) => {
+    const { guildId, event, payload } = req.body || {};
+    if (!guildId || !event) return res.status(400).json({ error: "guildId and event are required" });
+    const activity = require("./systems/activity");
+    res.json(activity.record(guildId, event, payload || {}) || { ok: true });
+  });
+
   bot.get("/profiles/:guildId/duplicates", (req, res) => {
     if (req.query.robloxId) {
       res.json({
