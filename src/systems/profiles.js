@@ -130,6 +130,7 @@ function findByRoblox(guildId, query) {
 }
 
 function saveProfile(guildId, discordId, updates) {
+  const { skipBoardRefresh, ...patch } = updates || {};
   let saved = null;
   store.updateSync((db) => {
     migrateCodes(db);
@@ -138,7 +139,7 @@ function saveProfile(guildId, discordId, updates) {
     ensureLetterCode(db, current);
     saved = {
       ...current,
-      ...updates,
+      ...patch,
       profile_id: current.profile_id,
       discord_id: String(discordId),
       guild_id: guildId || current.guild_id,

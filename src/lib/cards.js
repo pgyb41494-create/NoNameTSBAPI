@@ -66,6 +66,7 @@ function buildCardModel(position, player = {}) {
     robloxUsername,
     robloxTag,
     robloxUrl: url,
+    robloxId: player.robloxId || null,
     region: player.regionShort || regionShort(player.region) || regionLabel(player.region) || (empty ? "-" : "—"),
     regionFull: regionLabel(player.region),
     host: player.host || player.country || regionLabel(player.region) || null,

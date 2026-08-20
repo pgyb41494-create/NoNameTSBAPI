@@ -75,4 +75,20 @@ async function checkRobloxBio(robloxId, code) {
   return bio.toLowerCase().includes(String(code).toLowerCase());
 }
 
-module.exports = { parseRobloxInput, resolveRobloxUser, checkRobloxBio };
+async function fetchRobloxHeadshots(userIds) {
+  const ids = [...new Set((userIds || []).map(String).filter(Boolean))];
+  const map = {};
+  if (!ids.length) return map;
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100);
+    const avatarRes = await fetchJson(
+      `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${chunk.join(",")}&size=420x420&format=Png&isCircular=false`
+    );
+    for (const row of avatarRes?.data || []) {
+      if (row?.targetId && row?.imageUrl) map[String(row.targetId)] = row.imageUrl;
+    }
+  }
+  return map;
+}
+
+module.exports = { parseRobloxInput, resolveRobloxUser, checkRobloxBio, fetchRobloxHeadshots };

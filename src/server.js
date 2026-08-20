@@ -22,6 +22,12 @@ const guilds = require("./systems/guilds");
 const { mountAuth, websiteUrl } = require("./auth");
 const { mountStaff } = require("./staff");
 const panels = require("./systems/panels");
+const { notifyBoardRefresh } = require("./lib/boardNotify");
+
+function stripBotMeta(body = {}) {
+  const { skipBoardRefresh, ...rest } = body || {};
+  return { data: rest, skipBoardRefresh: !!skipBoardRefresh };
+}
 
 function botAuth(req, res, next) {
   const token = process.env.API_TOKEN;
@@ -146,10 +152,14 @@ function createApp() {
     res.json(profiles.getProfile(req.params.guildId, req.params.userId) || null);
   });
   bot.post("/profiles/:guildId/:userId", (req, res) => {
-    res.json(profiles.saveProfile(req.params.guildId, req.params.userId, req.body || {}));
+    const { data, skipBoardRefresh } = stripBotMeta(req.body);
+    const saved = profiles.saveProfile(req.params.guildId, req.params.userId, data);
+    if (!skipBoardRefresh) notifyBoardRefresh(req.params.guildId, req.params.userId);
+    res.json(saved);
   });
   bot.delete("/profiles/:guildId/:userId", (req, res) => {
     profiles.deleteProfile(req.params.guildId, req.params.userId);
+    notifyBoardRefresh(req.params.guildId, req.params.userId);
     res.json({ ok: true });
   });
   bot.get("/profiles/lookup/:guildId", (req, res) => {
@@ -159,23 +169,35 @@ function createApp() {
   bot.get("/leaderboard/:guildId", (req, res) => res.json(leaderboard.getConfig(req.params.guildId)));
   bot.post("/leaderboard/:guildId", (req, res) => res.json(leaderboard.updateConfig(req.params.guildId, req.body || {})));
   bot.post("/leaderboard/:guildId/place", (req, res) => {
-    res.json(leaderboard.place(req.params.guildId, Number(req.body.position), req.body.userId));
+    const result = leaderboard.place(req.params.guildId, Number(req.body.position), req.body.userId);
+    notifyBoardRefresh(req.params.guildId, req.body.userId);
+    res.json(result);
   });
 
   bot.get("/lineup/:guildId", (req, res) => res.json(lineup.getConfig(req.params.guildId)));
   bot.post("/lineup/:guildId", (req, res) => res.json(lineup.updateConfig(req.params.guildId, req.body || {})));
   bot.post("/lineup/:guildId/slot", (req, res) => {
     const { region, board, position, userId } = req.body || {};
-    res.json(lineup.setSlot(req.params.guildId, region, board || "main", Number(position), userId));
+    const result = lineup.setSlot(req.params.guildId, region, board || "main", Number(position), userId);
+    notifyBoardRefresh(req.params.guildId, userId || null);
+    res.json(result);
   });
 
   bot.get("/ranking/:guildId", (req, res) => res.json(ranking.getConfig(req.params.guildId)));
   bot.post("/ranking/:guildId", (req, res) => res.json(ranking.updateConfig(req.params.guildId, req.body || {})));
   bot.post("/ranking/:guildId/stage", (req, res) => {
-    res.json(ranking.setStage(req.params.guildId, req.body.userId, req.body.stage, req.body.moderatorId));
+    const result = ranking.setStage(req.params.guildId, req.body.userId, req.body.stage, req.body.moderatorId);
+    notifyBoardRefresh(req.params.guildId, req.body.userId);
+    res.json(result);
   });
 
-  bot.post("/score/:guildId", (req, res) => res.json(score.recordMatch(req.params.guildId, req.body || {})));
+  bot.post("/score/:guildId", (req, res) => {
+    const body = req.body || {};
+    const result = score.recordMatch(req.params.guildId, body);
+    notifyBoardRefresh(req.params.guildId, body.winnerId);
+    notifyBoardRefresh(req.params.guildId, body.loserId);
+    res.json(result);
+  });
   bot.get("/score/:guildId/:userId", (req, res) => res.json(score.getRecord(req.params.guildId, req.params.userId)));
   bot.get("/score-config/:guildId", (req, res) => res.json(score.getConfig(req.params.guildId)));
   bot.post("/score-config/:guildId", (req, res) => res.json(score.updateConfig(req.params.guildId, req.body || {})));
@@ -199,13 +221,19 @@ function createApp() {
   bot.get("/challenges/:guildId", (req, res) => res.json(challenges.publicState(req.params.guildId)));
   bot.post("/challenges/:guildId", (req, res) => {
     try {
-      res.json(challenges.createChallenge(req.params.guildId, req.body.fromId, req.body.targetId));
+      const result = challenges.createChallenge(req.params.guildId, req.body.fromId, req.body.targetId);
+      notifyBoardRefresh(req.params.guildId, req.body.fromId);
+      notifyBoardRefresh(req.params.guildId, req.body.targetId);
+      res.json(result);
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
   });
   bot.post("/challenges/:guildId/clear", (req, res) => {
-    res.json(challenges.clearInvolving(req.params.guildId, req.body.userId || req.body.fromId));
+    const userId = req.body.userId || req.body.fromId;
+    const result = challenges.clearInvolving(req.params.guildId, userId);
+    notifyBoardRefresh(req.params.guildId, userId);
+    res.json(result);
   });
   bot.get("/challenges/:guildId/dodges/:userId", (req, res) => {
     res.json(challenges.getDodge(req.params.guildId, req.params.userId));
