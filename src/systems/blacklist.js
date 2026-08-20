@@ -1,19 +1,28 @@
 const { createJsonStore } = require("../store/jsonStore");
 
 const store = createJsonStore("blacklist.json", {});
+const NETWORK_ID = "network";
 
-function getList(guildId) {
-  const db = store.load();
-  return db[guildId] || { guildId, entries: [] };
+function stripUser(db, discordId) {
+  const id = String(discordId);
+  for (const [guildId, bucket] of Object.entries(db)) {
+    db[guildId] = {
+      guildId,
+      entries: (bucket?.entries || []).filter((e) => String(e.discordId) !== id),
+    };
+  }
 }
 
-function addEntry(guildId, entry) {
-  let next = null;
+function getList(_guildId) {
+  return { guildId: NETWORK_ID, entries: listAll() };
+}
+
+function addEntry(_guildId, entry) {
   store.updateSync((db) => {
-    const current = db[guildId] || { guildId, entries: [] };
-    const filtered = current.entries.filter((e) => String(e.discordId) !== String(entry.discordId));
-    next = {
-      guildId,
+    stripUser(db, entry.discordId);
+    const current = db[NETWORK_ID] || { guildId: NETWORK_ID, entries: [] };
+    db[NETWORK_ID] = {
+      guildId: NETWORK_ID,
       entries: [
         {
           id: entry.id || `${Date.now()}`,
@@ -34,34 +43,26 @@ function addEntry(guildId, entry) {
           moderatorAvatar: entry.moderatorAvatar || null,
           at: entry.at || new Date().toISOString(),
         },
-        ...filtered,
+        ...current.entries,
       ],
     };
-    db[guildId] = next;
     return db;
   });
-  return next;
+  return getList();
 }
 
-function removeEntry(guildId, discordId) {
-  let next = null;
+function removeEntry(_guildId, discordId) {
   store.updateSync((db) => {
-    const current = db[guildId] || { guildId, entries: [] };
-    next = {
-      guildId,
-      entries: current.entries.filter((e) => String(e.discordId) !== String(discordId)),
-    };
-    db[guildId] = next;
+    stripUser(db, discordId);
     return db;
   });
-  return next;
+  return getList();
 }
 
-function isBlacklisted(guildId, discordId) {
-  return getList(guildId).entries.some((e) => String(e.discordId) === String(discordId));
+function isBlacklisted(_guildId, discordId) {
+  return listAll().some((e) => String(e.discordId) === String(discordId));
 }
 
-/** All entries across every server (public network blacklist). */
 function listAll() {
   const db = store.load();
   const rows = [];
@@ -71,7 +72,6 @@ function listAll() {
     }
   }
   rows.sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")));
-  // Prefer newest row per Discord user for the public network view
   const seen = new Set();
   return rows.filter((row) => {
     const id = String(row.discordId);

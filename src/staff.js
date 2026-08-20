@@ -1,4 +1,4 @@
-const { readSession, isStaff } = require("./auth");
+const { readSession, isStaff, isOwner } = require("./auth");
 const blacklist = require("./systems/blacklist");
 const trainers = require("./systems/trainers");
 const wars = require("./systems/wars");
@@ -18,6 +18,14 @@ function loginAuth(req, res, next) {
 
 function requireStaff(req, res, next) {
   if (!isStaff(req.user?.id)) return res.status(403).json({ error: "Staff only" });
+  req.staff = req.user;
+  next();
+}
+
+function requireOwner(req, res, next) {
+  if (!isOwner(req.user?.id)) {
+    return res.status(403).json({ error: "Only the two bot owners can change the network blacklist." });
+  }
   req.staff = req.user;
   next();
 }
@@ -105,13 +113,13 @@ function mountStaff(app) {
     res.json({ reports: reports.list("pending") });
   });
 
-  r.post("/reports/:id/approve", requireStaff, async (req, res) => {
+  r.post("/reports/:id/approve", requireOwner, async (req, res) => {
     try {
       const report = reports.get(req.params.id);
       if (!report) return res.status(404).json({ error: "Report not found" });
       if (report.status !== "pending") return res.status(400).json({ error: "Report already reviewed" });
 
-      const guildId = resolveStaffGuildId(req.body?.guildId);
+      const guildId = "network";
 
       const player = await enrichUser(report.reportedId);
       const mod = await enrichUser(req.staff.id);
@@ -372,15 +380,15 @@ function mountStaff(app) {
     }
   });
 
-  r.get("/:guildId/blacklist", requireStaff, (req, res) => res.json(blacklist.getList(req.params.guildId)));
-  r.post("/:guildId/blacklist", requireStaff, async (req, res) => {
+  r.get("/:guildId/blacklist", requireStaff, (req, res) => res.json(blacklist.getList("network")));
+  r.post("/:guildId/blacklist", requireOwner, async (req, res) => {
     try {
       const { discordId, reason, evidence, where, when } = req.body || {};
       if (!discordId) return res.status(400).json({ error: "discordId is required" });
       const player = await enrichUser(discordId);
       const mod = await enrichUser(req.staff.id);
       res.json(
-        blacklist.addEntry(req.params.guildId, {
+        blacklist.addEntry("network", {
           discordId,
           username: player.username,
           displayName: player.displayName,
@@ -399,8 +407,8 @@ function mountStaff(app) {
       fail(res, err);
     }
   });
-  r.delete("/:guildId/blacklist/:userId", requireStaff, (req, res) => {
-    res.json(blacklist.removeEntry(req.params.guildId, req.params.userId));
+  r.delete("/:guildId/blacklist/:userId", requireOwner, (req, res) => {
+    res.json(blacklist.removeEntry("network", req.params.userId));
   });
 
   r.get("/:guildId/trainers", requireStaff, (req, res) => res.json(trainers.getList(req.params.guildId)));

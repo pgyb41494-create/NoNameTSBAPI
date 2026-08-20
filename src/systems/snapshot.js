@@ -48,7 +48,6 @@ function cardsFromSlots(guildId, slots, gifUrl) {
 function publicSnapshot(guildId) {
   const lb = leaderboard.getConfig(guildId);
   const lu = lineup.getConfig(guildId);
-  const bl = blacklist.getList(guildId);
   const w = wars.getWars(guildId);
 
   const lineupBoards = Object.values(lu.regions || {}).map((region) => ({
@@ -71,7 +70,7 @@ function publicSnapshot(guildId) {
       gif: lu.cardGifUrl || brand.defaultGif,
       regions: lineupBoards,
     },
-    blacklist: bl.entries || [],
+    blacklist: blacklist.listAll(),
     trainers: trainers.listAll(),
     wars: w.wars || [],
   };
