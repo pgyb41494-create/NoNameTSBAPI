@@ -70,13 +70,37 @@ const EN = {
       "If you change your mind and don't want to make a clan anymore, just say so and we'll delete it.",
     ],
   },
+  about: {
+    title: "About TSBCC",
+    items: [
+      "👑 **TSBCC — The Strongest Battlegrounds Clanning Community.**",
+      "TSBCC is the central competitive hub for The Strongest Battlegrounds on Roblox. It brings together the most recognized clans, highly skilled players, and a structured environment for organized wars, rankings, and growth.",
+      "TSBCC is the biggest clanning community for The Strongest Battlegrounds — one of the most active, largest clanning communities on Discord, if not the biggest, with over **300 registered clans**.",
+      "⬩➤ **What Can You Do In This Server?**\nClimb the competitive ranks, join staff-led clan wars, make friends, and see if you have what it takes to be one of the top battlegrounds players.\n\nDive into a competitive world where skilled players, organized clans, and a dedicated staff team come together to create exciting, fair gameplay and tournaments!\n\nAdvertise your clan in the right channels to recruit players and grow your community.\n\nTake part in ranked wars hosted by experienced staff across all regions (**NA, EU, OCE, AS**) and compete in well-organized branches.\n\nCurious to check your skill level? Join our branches — we have a branch for each region.\n\nInterested in helping out? Apply for staff roles like Ticket Staff, Helper, or Referee, with full support and guidance along the way.\n\nGot a problem or dispute? Our transparent ticketing system helps you appeal penalties, resolve conflicts, and manage blacklists smoothly.\n\nJoin a clan or register your own with our official system — it’s simple and straightforward.\n\nPromote your clan in the right channels to attract active players and grow your presence.\n\nCompete in ranked battles across all regions, with staff making sure everything runs fairly. Offer yourself as an agent to play for clans.\n\nApply for staff positions with confidence — you’ll get clear instructions and guidance every step of the way.",
+      "⬩➤ **Additional Information**\n⬩ Please check the message sent to your DMs by TSBCC — it contains a helpful guide and the link for our branches.\n⬩ This server is **NOT** an official Yielding Arts server. We are fan made.",
+      "╭⬩➤ Founded at╎ **7/11/2023** By **@Karma**\n┃⬩➤ Server vanity link╎ https://discord.gg/tsbcc\n┃⬩➤ Group╎ https://www.roblox.com/share/g/415578052\n╰⬩➤ Managed By **@opkillermc**",
+    ],
+  },
+  links: {
+    title: "Links",
+    items: [
+      "**War management server:** https://discord.gg/MVr4eYzThG",
+      "**Server vanity:** https://discord.gg/tsbcc",
+      "**Roblox group:** https://www.roblox.com/share/g/415578052",
+      "**Advertise / promote your clan:** https://discord.com/channels/1171493911651438714/1219327542184382564",
+      "**Ticket system:** https://discord.com/channels/1171493911651438714/1276471630595358801/1276472016144302116",
+      "**Register your own clan:** https://discord.com/channels/1171493911651438714/1235181558529261578/1235181965507039252",
+      "**Offer yourself as a player for a clan:** https://discord.com/channels/1171493911651438714/1296813341490286672",
+    ],
+  },
   wars: {
     title: "War rights",
     items: [
+      "**War management server:** https://discord.gg/MVr4eYzThG",
       "Ranges are **10 placements for each region**, but within the top 10 it’s **2**.",
       "To get into the top 10 you must be in the **top 11** to challenge them. To challenge top **#1** you must be top **#2**.",
       "If any of your questions aren't answered here, ping a war manager, or you could even ping @opkillermc.",
-      "**Under the top 10:** the clan leader has **2 days** to answer your war request in the war management server. If they dodge, the war manager takes care of it and you get auto.",
+      "**Under the top 10:** the clan leader has **2 days** to answer your war request in the war management server (https://discord.gg/MVr4eYzThG). If they dodge, the war manager takes care of it and you get auto.",
       "The war should be scheduled **within 2 days**. You can agree to a later date, but if the other clan leader doesn't want to delay it, the max is within a 2 day period.",
       "**Above the top 10:** works exactly like under top 10, except the period changes to a **week**. To get into top #10 you must be #11 to challenge #10. To challenge #1 you must be #2. Range is 2 spots.",
       "Loop holing in the rules results in punishments. Questions go to war managers or the ticket system.",
@@ -93,11 +117,13 @@ const EN = {
     ],
   },
   coachHints: [
-    "Answer from TSBCC community rules only: blacklist, bail, clan verification, war rights, and FAQ.",
+    "Answer from TSBCC community rules only: about TSBCC, blacklist, bail, clan verification, war rights, FAQ, and official links.",
     "Do not use old LATAM/TSBL 1v1 phase, tryout, or glad rules — those are not TSBCC rules.",
     "Blacklist is TSBCC-wide. Bail is optional and staff-discretion only.",
     "Clan verify: 100 members per region, must be the yellow-crown server owner.",
     "Wars: range 10 outside top 10, range 2 inside top 10. Under top 10 = 2 days; above top 10 = 1 week.",
+    "War management server invite: https://discord.gg/MVr4eYzThG",
+    "Vanity: https://discord.gg/tsbcc — managed by @opkillermc, founded 7/11/2023 by @Karma.",
     "Do not invent punishments. If it is not in the brief, say it is not listed.",
   ],
   ui: {
@@ -108,7 +134,7 @@ const EN = {
 };
 
 const PACKS = { es: EN, en: EN };
-const SECTION_KEYS = ["overview", "blacklist", "blacklist2", "bail", "verification", "wars", "faq"];
+const SECTION_KEYS = ["overview", "about", "blacklist", "blacklist2", "bail", "verification", "wars", "faq", "links"];
 
 function normalizeLang(raw) {
   const t = String(raw || "").toLowerCase();

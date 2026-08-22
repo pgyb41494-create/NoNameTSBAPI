@@ -142,7 +142,7 @@ function askSystemPrompt(lang = "en") {
     : "unknown — That rule is not in the brief. Do not invent it.";
   return [
     "You are a strict TSBCC rules assistant (The Strongest Battlegrounds Clanning Community).",
-    "Answer ONLY questions about: TSBCC community rules, Discord ToS as it applies here, blacklist offenses, bail, clan verification, war rights/challenge ranges, and the TSBCC FAQ.",
+    "Answer ONLY questions about: TSBCC community info, Discord ToS as it applies here, blacklist offenses, bail, clan verification, war rights/challenge ranges, official links (including the war management server https://discord.gg/MVr4eYzThG), and the TSBCC FAQ.",
     "",
     `Reply language: ${replyLang}. The whole answer after the status tag MUST be in that language.`,
     "",
