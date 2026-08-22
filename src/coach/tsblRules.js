@@ -1,217 +1,114 @@
 /**
- * TSBCC / LATAM TSB Competitive rules.
- * English is the bot default; Spanish is a toggle.
+ * Official TSBCC community rules (source of truth for `'rules` and `'ask`).
  */
 const TSBL = {
-  name: "TSBCC (LATAM TSB Competitive)",
-};
-
-const ES = {
-  leaderboard: {
-    title: "Leaderboard",
-    items: [
-      "Para obtener un spot en la leaderboard necesitas el rol de tryout de P1. Ese rol te permite retar a cualquiera del Top 30.",
-      "Cooldown: si pierdes, 7 días para volver a retar; si ganas, 4 días para aceptar otro reto. Se puede saltar si ambos jugadores están de acuerdo.",
-      "Rango de reto: #30–#21 → 3 posiciones; #20–#11 → 2; #10–#1 → 1.",
-      "Formatos 1v1 permitidos: FT5 / FT10 estándar; FT5 cross region; FT5 / 2 sets.",
-    ],
-  },
-  fairplay: {
-    title: "Fair play / cliente",
-    items: [
-      "Solo FFlags autorizados por Roblox en la Allowed List. Saltarse la seguridad del cliente para FFlags baneados anula el 1v1.",
-      "Quitar el límite de FPS de Roblox (tope 240) está prohibido. Modificar física, MTU o texturas (mapa negro/blanco, etc.) está prohibido.",
-      "Ajustes nativos de Bloxstrap que el cliente permite (ej. bajar texturas) están permitidos. Fishtrap, Voidstrap u otras versiones modificadas están prohibidas.",
-      "Lagswitch y tab glitch están prohibidos en 1v1 y glads.",
-      "Macros permitidos: solo backdash cancel / insta ragdoll. Prohibidos: ABA Tech, Hybrid Forward Dash (side + front), macros de cámara (lethal tech, Lee twisted, similares).",
-      "Scripts / exploiting = ban permanente del competitivo.",
-    ],
-  },
-  conduct: {
-    title: "Conducta en partida",
-    items: [
-      "Passive Strike: más de 12 segundos sin un dash agresivo = strike. El counterdash NO cuenta como agresivo. 3/3 strikes = autowin para el rival. Si ambos son pasivos, no se aplica.",
-      "Running: correr 4+ segundos está prohibido. Spamear side dash solo para tomar distancia también cuenta como running.",
-      "Personajes permitidos: The Strongest Hero (Saitama), Hero Hunter (Garou), Brutal Demon (Metal Bat) — salvo que el host publique otra lista para ese evento.",
-      "En 1v1 competitivo NO se usa ultimate / Modo Serio / Rampage (tecla G). Solo kit base.",
-    ],
-  },
-  tryouts: {
-    title: "Tryouts",
-    items: [
-      "Formato: FT3 o FT5 (elección del hoster). Hay que indicar región/host (São Paulo, Miami, Dallas, Los Angeles).",
-      "Condición opcional: ej. no tocar la línea roja, sin paulistas, sin gente de Miami, etc.",
-      "Respeto y sin trampas. Prohibido delay intencional o lagswitch.",
-      "Cuando el servidor se llene e inicie el evento, se marca Locked.",
-      "Al terminar, el aplicante envía su username / tag de Discord al tryouter para registrar el resultado.",
-      "Plantilla: Tryout/FT, Región, Tu Phase, Condición, Link.",
-      "Los resultados se registran en el canal de resultados. Asignar phase: >phase 2 high weak @user (o 'stage / /stage del bot).",
-      "La phase máxima que el tryouter puede dar es la suya. Si el tryouter está por encima de 2 High Strong, el tope sigue siendo 2 High Strong.",
-    ],
-  },
-  phases: {
-    title: "Phases / stages",
-    items: [
-      "Las Phases clasifican el nivel en LATAM — no es un ranking global. Se puede obtener phase en el host del jugador.",
-      "Hosts: São Paulo BR; Miami FL; Dallas TX; Los Angeles CA.",
-      "Phase 0 Supremo — dominio máximo en LATAM.",
-      "Phase 1 Avanzado — nivel alto y estable (Top LATAM/SA).",
-      "Phase 2 Promedio — nivel competitivo estándar de la región.",
-      "Phase 3 En crecimiento — fundamentos claros, todavía irregular.",
-      "Phase 4 Principiante con base — movimientos, dashes y combos simples.",
-      "Phase 5 Nuevo en TSBCC — recién empieza en el sistema.",
-      "Dentro de la Phase: Tier High / Mid / Low (posición en esa phase).",
-      "Sub-tier Strong / Stable / Weak (forma actual). Ejemplo: Phase 2 High Weak.",
-    ],
-  },
-  clans: {
-    title: "Clanes",
-    items: [
-      "Registro: mínimo 40 miembros.",
-      "Debe tener lineup en ambas regiones: Miami, FL y São Paulo, BR.",
-      "El nombre del clan no puede pasar de 20 caracteres ni ser inapropiado.",
-      "Registra el clan en General Support.",
-      "Si ya está en la leaderboard y quieres cambiar Clan Name, Clan Tag o Clan Leader: `>clan tu_nombre_de_clan` → Manage Clan.",
-    ],
-  },
-  glads: {
-    title: "Gladiators",
-    items: [
-      "Elegibilidad: mínimo 1 semana en el clan y tag oficial del clan. Si el clan no exige tag, el jugador debe aparecer en el roster oficial.",
-      "Prohibido: clanless, alts (salvo aprobación oficial), aliados dentro del lineup.",
-      "Técnico: ping inestable o mayor a 150ms no puede jugar glads.",
-      "Formato estándar: mínimo 3v3, máximo 7v7. Los leaders eligen el FT (FT3 hasta FT7) si ambos lados están de acuerdo.",
-      "Cross-region: obligatorio FT3 en cada región correspondiente.",
-    ],
-  },
-  autowin: {
-    title: "Autowin strikes",
-    items: [
-      "Autowin strikes se aplican cuando un clan causa un autowin injustificado.",
-      "Motivos: no presentarse en la ventana de 15 minutos; no cumplir requisitos de participación; miembros con scripts, Clumsy o bootstrapper ilegal.",
-      "3/3 strikes = salida de la leaderboard + 1 mes de suspensión del competitivo.",
-      "Con 1–2/3 strikes, se resetean completando 2 glads válidos.",
-    ],
-  },
-  coachHints: [
-    "En clips competitivos, señala pasividad, running, macros/tech ilegales si se ven, y legalidad de personaje.",
-    "Consejos sobre kits legales (Saitama / Garou / Metal Bat) salvo que el clip sea casual con otro personaje.",
-    "Si stallan o side-dashean lejos rato, cita Running / Passive Strike.",
-    "En tryouts FT3/FT5, prioriza compostura y conversión, no solo movimiento flashy.",
-    "En 1v1: si pulsan G (Modo Serio / Rampage / ultimate), márcalo como error — solo kit base.",
-    "En glads: tag/roster, no clanless/alts/aliados, ping ≤150ms. Autowin injustificado (15 min, participación, scripts/Clumsy/bootstrapper ilegal) = strike.",
-  ],
-  ui: {
-    pick: "Elige una sección",
-    askHint: "Pregunta concreta con `'ask …`. Inglés: `'rules en`.",
-    footerAsk: "Pregunta concreta con `'ask …`.",
-  },
+  name: "TSBCC Rules",
 };
 
 const EN = {
-  leaderboard: {
-    title: "Leaderboard",
+  overview: {
+    title: "TSBCC Rules",
     items: [
-      "To get a leaderboard spot you need the P1 tryout role. That role lets you challenge Top 30.",
-      "Cooldown: loser waits 7 days to challenge again; winner waits 4 days to accept another challenge. Both players may waive it by agreement.",
-      "Challenge range: #30–#21 → 3 spots; #20–#11 → 2; #10–#1 → 1.",
-      "Allowed 1v1 formats: FT5 / FT10 standard; FT5 cross-region; FT5 / 2 sets.",
+      "Firstly, always go by the Discord ToS, if not you will be muted or warned depending on what you did.",
+      "Also, please just use common sense, we obviously can’t list everything blacklistable here.",
     ],
   },
-  fairplay: {
-    title: "Fair play / client",
+  blacklist: {
+    title: "Blacklist Rules",
     items: [
-      "Only Roblox-authorized FFlags from the Allowed List. Bypassing client security for banned FFlags voids the 1v1.",
-      "Removing Roblox's FPS cap (240) is banned. Physics / MTU / unauthorized texture mods (all black/white maps) are banned.",
-      "Native Bloxstrap settings the client allows (e.g. lower textures) are OK. Fishtrap / Voidstrap / modified forks are banned.",
-      "Lagswitch and tab-glitch are banned in 1v1 / glads.",
-      "Macros: ONLY backdash cancel / insta ragdoll. Banned: ABA Tech, Hybrid Forward Dash (side+front), camera macros (lethal tech, Lee twisted, similar).",
-      "Scripts / exploiting = permanent competitive ban.",
+      "These offenses will result in a TSBCC wide blacklist. Avoid them by following Discord’s ToS and basic community standards.",
+      "⇥ **Doxxing & Threats**\n·····································\n⤷ Leaking or threatening to leak private info (i.e., IP, name, address) = instant blacklist.\nDon’t share or threaten to share private info, even as a joke.",
+      "⇥ **Nuking**\n·····································\n⤷ Mass banning or destroying a server and clan is bannable.\nDO NOT even try to attempt a nuke, you will still get blacklisted.",
+      "⇥ **Botting Servers**\n·····································\n⤷ Stuffing a clan with fake/alt accounts to inflate member count.\nOnly add legit users, alts and bots count as botting (only if on purpose).",
+      "⇥ **Pedophilia / CP**\n·····································\n⤷ Any genuine behavior or content involving minors = immediate blacklist and most likely permanent.\nDon’t joke or act seriously about this at all, we do not care if you were joking.",
+      "⇥ **Zoophilia**\n·····································\n⤷ Expressing interest in animals, even as “jokes,” is taken seriously.\nAvoid all related jokes or content. It’s not allowed in any form.",
+      "⇥ **Necrophilia**\n·····································\n⤷ Same as above but toward corpses, statements, content, or jokes.\nDon’t confuse this with saying someone “used to be attractive.”",
+      "⇥ **Sending Gore**\n·····································\n⤷ Sending graphic violence in DMs or servers is not allowed.\nDon’t share disturbing or violent media anywhere.",
+      "⇥ **Nazi Support**\n·····································\n⤷ Praising or glorifying Hitler, Nazism, or Nazi imagery.\nAvoid Nazi references, praise, jokes, or images.",
+      "⇥ **Individual Raiding**\n·····································\n⤷ Joining a clan server to spam insults or links = a blacklist.\nIf done by a whole clan, it’s a strike for the clan. If done solo, it’s a personal blacklist.",
+      "⇥ **Hardcore NSFW / NSFW**\n·····································\n⤷ Extreme adult content is never allowed, in DMs or chats.\nDon’t post NSFW content ANYWHERE.",
+      "⇥ **Scamming**\n·····································\n⤷ Stealing Robux/money within TSBCC related deals = blacklist.\nTrade responsibly, if it’s TSBCC related, scamming is bannable. Even with trainings.",
     ],
   },
-  conduct: {
-    title: "Match conduct",
+  blacklist2: {
+    title: "Blacklist Rules (cont.)",
     items: [
-      "Passive Strike: >12 seconds without an aggressive dash = strike. Counterdash does NOT count. 3/3 = autowin for the opponent. If BOTH are passive, it does not apply.",
-      "Running for 4+ seconds is banned. Spam side-dashing only to create distance also counts as running.",
-      "Legal characters: The Strongest Hero (Saitama), Hero Hunter (Garou), Brutal Demon (Metal Bat) — unless the host posts a different list for that event.",
-      "Competitive 1v1: do NOT use ultimate / Serious Mode / Rampage (G). Base kit only.",
+      "⇥ **Harassment**\n·····································\n⤷ Targeting someone repeatedly to ruin their experience.\nInsults ≠ harassment. Long-term targeting is harassment.",
+      "⇥ **Religion Disrespect**\n·····································\n⤷ Heavily insulting a religion is bannable in TSBCC.\nKeep religious discussions respectful or avoid them completely.",
+      "⇥ **Defamation**\n·····································\n⤷ Spreading lies to ruin someone’s rep = blacklist.\n(Extreme cases only, not them faking scores or something it's not blacklistable.)\nIf you don’t have proof, don’t accuse them of it.",
+      "⇥ **Rape Threats**\n·····································\n⤷ Threatening anyone with rape, joking about it is not allowed. Even if it is your friend or someone you know, it is not allowed at all.",
+      "⇥ **Exploiting / tabbing / illegal FF usage**\n·····································\n⤷ Only visual FFlags are allowed. And we do not allow Tabbing/Exploiting, we do follow the game rules.",
+      "⇥ **Faking Proofs**\n·····································\n⤷ Falsifying evidence to get someone blacklisted = harsh punishment or a blacklist.\nJust don't lie or forge proof, it's not worth it man.",
+      "⇥ **Harboring Blacklisted Members (after the clan is striked)**\n·····································\n⤷ Sheltering banned users after 24 hours = your clan gets blacklisted.\nAgain, make sure you keep an eye out in TSB Clanning Community · clanning news.",
+      "⇥ **Extreme Homophobia**\n·····································\n⤷ Heavily insulting gay people is blacklistable, avoid any jokes/slurs.",
+      "⇥ **Alting**\n·····································\n⤷ Alting in TSBCC is disallowed and is also blacklistable, if you are found alting you will be blacklisted.\n(Alting in clans, sets, etc..)",
+      "⇥ **Having people on your account**\n·····································\n⤷ You are not allowed to let anyone play on your account in wars/sets, it is blacklistable.",
+      "⇥ **Allying / helping / supporting blacklisted clans**\n·····································\n⤷ You are not allowed to associate with blacklisted clans, if caught, you will be blacklisted as-well (boosting/staff).\nSame goes if you help them with an in-game raid.",
+      "⇥ **Molest / groom jokes**\n·····································\n⤷ Making molest/groom jokes is blacklistable, avoid using them at all because they will get you blacklisted. Even if they are your friend.",
+      "⇥ **Racism / xenophobia**\n·····································\n⤷ Making any racist/xenophobic comments towards anyone is blacklistable, even if you are that race just avoid using it we can't race check everyone.",
+      "⇥ **Creating unapproved branches**\n·····································\n⤷ Creating and advertising a branch without permission from a co-owner+ is blacklistable, if you want to make one dm a co-owner+.",
     ],
   },
-  tryouts: {
-    title: "Tryouts",
+  bail: {
+    title: "Bail System",
     items: [
-      "Format: FT3 or FT5 (hoster choice). Region/host must be stated (São Paulo, Miami, Dallas, Los Angeles).",
-      "Optional condition: e.g. no red line, no Paulistas, no Miami players, etc.",
-      "Stay respectful. No intentional delay / lagswitch.",
-      "When the server fills and the event starts, mark it Locked.",
-      "After the tryout, the applicant sends Discord username/tag to the tryouter to register the result.",
-      "Template: Tryout/FT, Region, Your Phase, Condition, Link.",
-      "Results go in the results channel. Assign phase with: >phase 2 high weak @user (or bot 'stage / /stage).",
-      "Tryouter max assignable phase = their own. If they are above 2 High Strong, the ceiling is still 2 High Strong.",
+      "In some cases, users may be allowed to bail their blacklist, meaning they can pay to be unblacklisted.",
+      "Bail is not guaranteed. It is only offered at staff discretion based on the severity of the offense.",
+      "If offered bail, you will be guided through the process by an owner or co-owner.",
+      "Bail channel: https://discord.com/channels/1171493911651438714/1191757877489188964",
+      "Discord ToS: https://discord.com/terms",
     ],
   },
-  phases: {
-    title: "Phases / stages",
+  verification: {
+    title: "Clan Verification",
     items: [
-      "Phases classify LATAM skill — not a global ladder. Players may earn phase on their host.",
-      "Hosts: São Paulo BR; Miami FL; Dallas TX; Los Angeles CA.",
-      "Phase 0 Supremo — peak LATAM mastery.",
-      "Phase 1 Advanced — high, stable regional level (Top LATAM/SA).",
-      "Phase 2 Average — standard competitive level.",
-      "Phase 3 Growing — fundamentals OK, still inconsistent.",
-      "Phase 4 Beginner with basics — movement, dashes, simple combos.",
-      "Phase 5 New to TSBCC — new to the system.",
-      "Inside a Phase: Tier High / Mid / Low.",
-      "Sub-tier Strong / Stable / Weak. Example: Phase 2 High Weak.",
+      "Click the button in TSBCC to begin your application. Please do not ping staff.",
+      "Minimum requirement: **100 members (One Region Only)**.",
+      "Must be the **server owner** (yellow crown). Admin is not enough.",
+      "Multiple regions: each region costs 100 members. Example: NA + EU + ASIA = 300 members required.",
+      "If you want to claim ownership, make a ticket and say so (could be from a blacklisted owner or anything) and don't invite the bot in.",
+      "If you change your mind and don't want to make a clan anymore, just say so and we'll delete it.",
     ],
   },
-  clans: {
-    title: "Clans",
+  wars: {
+    title: "War rights",
     items: [
-      "Registration: minimum 40 members.",
-      "Must have a lineup for both regions: Miami, FL and São Paulo, BR.",
-      "Clan name cannot exceed 20 characters and must not be inappropriate.",
-      "Register the clan in General Support.",
-      "If already on the leaderboard and you want to change Clan Name, Clan Tag, or Clan Leader: `>clan your_clan_name` → Manage Clan.",
+      "Ranges are **10 placements for each region**, but within the top 10 it’s **2**.",
+      "To get into the top 10 you must be in the **top 11** to challenge them. To challenge top **#1** you must be top **#2**.",
+      "If any of your questions aren't answered here, ping a war manager, or you could even ping @opkillermc.",
+      "**Under the top 10:** the clan leader has **2 days** to answer your war request in the war management server. If they dodge, the war manager takes care of it and you get auto.",
+      "The war should be scheduled **within 2 days**. You can agree to a later date, but if the other clan leader doesn't want to delay it, the max is within a 2 day period.",
+      "**Above the top 10:** works exactly like under top 10, except the period changes to a **week**. To get into top #10 you must be #11 to challenge #10. To challenge #1 you must be #2. Range is 2 spots.",
+      "Loop holing in the rules results in punishments. Questions go to war managers or the ticket system.",
     ],
   },
-  glads: {
-    title: "Gladiators",
+  faq: {
+    title: "FAQ",
     items: [
-      "Eligibility: at least 1 week in the clan and official clan tag. If the clan does not require a tag, the player must appear on the official roster.",
-      "Restrictions: clanless players banned; alt accounts banned unless officially approved; allied players in the lineup banned.",
-      "Technical: unstable ping or ping above 150ms cannot play glads.",
-      "Standard format: minimum 3v3, maximum 7v7. Leaders set FT (FT3 up to FT7) if both sides agree.",
-      "Cross-region glads must be FT3 in each corresponding region (mandatory).",
-    ],
-  },
-  autowin: {
-    title: "Autowin strikes",
-    items: [
-      "Autowin strikes are penalties when a clan causes an unjustified autowin.",
-      "Reasons: failing to show up in the agreed 15-minute window; not meeting participation requirements; members using scripts, Clumsy, or an illegal bootstrapper.",
-      "3/3 strikes = removal from the leaderboard + 1-month suspension from the competitive scene.",
-      "With 1–2/3 strikes, reset by completing 2 valid glads.",
+      "If your question isn’t answered here, ping a war manager.",
+      "**Q:** Can we dodge clans if we already have a war set up?\n**A:** Yes, but the war has to be announced and it's within a **day** period (the war will start in a day). If it starts in two days then you can't dodge and you have to war the other clan too.",
+      "**Q:** I just won a war against a clan that's top 11, and I want to challenge the top 10, but the leaderboard hasn't been updated yet. Can I challenge them?\n**A:** No. You must wait for the leaderboard to update. They can dodge it if it's not updated. We ensure the score is valid to not cause issues.",
+      "**Q:** My war has been voided due to the referee not showing up, what do we do?\n**A:** You both have to reschedule the war to another time, or you can void it altogether. We apologize.",
+      "**Q:** I had 2 wars announced, and I won the first one and became higher than the second one (in range). Can I dodge? Example: you're 5 challenging 4 and 6, you won 4 and now the other war is next.\n**A:** No, you can’t.",
     ],
   },
   coachHints: [
-    "When reviewing a competitive clip, call out passive play, running, illegal macros/tech if visible, and character legality.",
-    "Prefer legal kits (Saitama / Garou / Metal Bat) unless the clip is clearly casual with another character.",
-    "If they stall or side-dash away for long stretches, cite Running / Passive Strike.",
-    "For tryout FT3/FT5 clips, judge composure and conversion — not only flashy movement.",
-    "In 1v1 reviews: if they press G (Serious Mode / Rampage / ultimate), call it out — base kit only.",
-    "On glad clips: tag/roster, no clanless/alts/allies, ping ≤150ms. Unjustified autowin (15 min, participation, scripts/Clumsy/illegal bootstrapper) = strike.",
+    "Answer from TSBCC community rules only: blacklist, bail, clan verification, war rights, and FAQ.",
+    "Do not use old LATAM/TSBL 1v1 phase, tryout, or glad rules — those are not TSBCC rules.",
+    "Blacklist is TSBCC-wide. Bail is optional and staff-discretion only.",
+    "Clan verify: 100 members per region, must be the yellow-crown server owner.",
+    "Wars: range 10 outside top 10, range 2 inside top 10. Under top 10 = 2 days; above top 10 = 1 week.",
+    "Do not invent punishments. If it is not in the brief, say it is not listed.",
   ],
   ui: {
-    pick: "Pick a rules section",
-    askHint: "Ask a specific question with `'ask …`. Spanish: `'rules es`.",
+    pick: "Pick a TSBCC section",
+    askHint: "Ask a specific question with `'ask …`.",
     footerAsk: "Ask a specific question with `'ask …`.",
   },
 };
 
-const PACKS = { es: ES, en: EN };
-const SECTION_KEYS = ["leaderboard", "fairplay", "conduct", "tryouts", "phases", "clans", "glads", "autowin"];
+const PACKS = { es: EN, en: EN };
+const SECTION_KEYS = ["overview", "blacklist", "blacklist2", "bail", "verification", "wars", "faq"];
 
 function normalizeLang(raw) {
   const t = String(raw || "").toLowerCase();
@@ -224,9 +121,6 @@ function detectLang(text) {
   if (!t) return "en";
   if (/^(es|español|espanol|spanish)\b/i.test(t)) return "es";
   if (/^(en|english|inglés|ingles)\b/i.test(t)) return "en";
-  const esHits = (t.match(/\b(qué|que|cómo|como|cuál|cual|dónde|donde|fase|fases|reto|retar|personaje|prohibido|tryout|phase|cooldown|rango|clan|glads|glad)\b/gi) || []).length;
-  const enHits = (t.match(/\b(what|what's|whats|how|which|where|why|who|can|is|are|the|challenge|cooldown|allowed|banned)\b/gi) || []).length;
-  if (esHits >= 2 && esHits > enHits) return "es";
   return "en";
 }
 
@@ -240,61 +134,28 @@ function tsblSectionKeys() {
 
 function tsblSection(key, lang = "en") {
   const pack = tsblPack(lang);
-  return pack[key] || pack.leaderboard;
+  return pack[key] || pack.overview;
 }
 
-function tsblPromptBlock(lang = "en") {
-  const pack = tsblPack(lang);
-  const L = normalizeLang(lang);
-  const labels =
-    L === "en"
-      ? {
-          ctx: "Competitive context",
-          fair: "Fair play / client",
-          conduct: "Match conduct",
-          coach: "While coaching competitive clips",
-        }
-      : {
-          ctx: "Contexto competitivo",
-          fair: "Fair play / cliente",
-          conduct: "Conducta en partida",
-          coach: "Al coachear clips competitivos",
-        };
-  return [
-    `${labels.ctx}: ${TSBL.name}`,
-    "",
-    `${pack.leaderboard.title}:`,
-    ...pack.leaderboard.items.map((l) => `- ${l}`),
-    "",
-    `${labels.fair}:`,
-    ...pack.fairplay.items.map((l) => `- ${l}`),
-    "",
-    `${labels.conduct}:`,
-    ...pack.conduct.items.map((l) => `- ${l}`),
-    "",
-    `${pack.tryouts.title}:`,
-    ...pack.tryouts.items.map((l) => `- ${l}`),
-    "",
-    `${pack.phases.title}:`,
-    ...pack.phases.items.map((l) => `- ${l}`),
-    "",
-    `${pack.clans.title}:`,
-    ...pack.clans.items.map((l) => `- ${l}`),
-    "",
-    `${pack.glads.title}:`,
-    ...pack.glads.items.map((l) => `- ${l}`),
-    "",
-    `${pack.autowin.title}:`,
-    ...pack.autowin.items.map((l) => `- ${l}`),
-    "",
-    `${labels.coach}:`,
-    ...pack.coachHints.map((l) => `- ${l}`),
-  ].join("\n");
+function tsblPromptBlock() {
+  const pack = EN;
+  const lines = [`Official TSBCC rules brief: ${TSBL.name}`, ""];
+  for (const key of SECTION_KEYS) {
+    const section = pack[key];
+    lines.push(`${section.title}:`);
+    for (const item of section.items) {
+      lines.push(`- ${item.replace(/\n/g, " / ")}`);
+    }
+    lines.push("");
+  }
+  lines.push("While answering:");
+  for (const hint of pack.coachHints) lines.push(`- ${hint}`);
+  return lines.join("\n");
 }
 
 module.exports = {
   TSBL,
-  TSBL_ES: ES,
+  TSBL_ES: EN,
   TSBL_EN: EN,
   tsblPromptBlock,
   tsblSectionKeys,
