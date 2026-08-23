@@ -349,7 +349,15 @@ function startServer() {
   const port = Number(process.env.PORT || process.env.API_PORT || 8787);
   const host = process.env.API_HOST || "0.0.0.0";
   return app.listen(port, host, () => {
+    const { DATA_DIR } = require("./store/dataPath");
+    const vol = process.env.RAILWAY_VOLUME_MOUNT_PATH || "";
     console.log(`${brand.name} API listening on http://${host}:${port}`);
+    console.log(`[store] DATA_DIR=${DATA_DIR}${vol ? ` volume=${vol}` : ""}`);
+    if (process.env.RAILWAY_ENVIRONMENT && !vol) {
+      console.warn(
+        "[store] No Railway volume detected. Scores/profiles will wipe on every redeploy. Attach a Volume to this API service at /data and set DATA_DIR=/data."
+      );
+    }
   });
 }
 

@@ -44,12 +44,13 @@ async function remoteDiscord(pathname, { method = "GET", body } = {}) {
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    const detail = data.error || data.message || "";
     const err = new Error(
-      data.error ||
-        data.message ||
-        (res.status === 502
+      detail
+        ? `${detail} (${method} ${pathname})`
+        : res.status === 502
           ? `Bot HTTP is down (502) at ${base}. Redeploy NoNameTSBBot and confirm /health works.`
-          : `Discord bot-api ${res.status}`)
+          : `Discord bot-api ${res.status} (${method} ${pathname})`
     );
     err.status = res.status === 502 ? 503 : res.status;
     throw err;
