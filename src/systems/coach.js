@@ -1,5 +1,5 @@
 const { knowledgePrompt } = require("../coach/knowledge");
-const { tsblPromptBlock, detectLang, normalizeLang } = require("../coach/tsblRules");
+const { tsblAskBrief, detectLang, normalizeLang } = require("../coach/tsblRules");
 const profiles = require("./profiles");
 
 function hasAiKey() {
@@ -77,7 +77,11 @@ async function callGemini({ prompt, frames, temperature = 0.4 }) {
   });
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data?.error?.message || `Gemini failed (${res.status})`);
+    const raw = String(data?.error?.message || `Gemini failed (${res.status})`);
+    if (/prohibited use|input blocked|sensitive words/i.test(raw)) {
+      throw new Error("ASK_BLOCKED");
+    }
+    throw new Error(raw.replace(/https?:\/\/\S+/g, "").trim() || "Gemini failed");
   }
   return interactionOutputText(data);
 }
@@ -154,7 +158,7 @@ function askSystemPrompt(lang = "en") {
     "- Prefer bullet points for multi-part rules. No filler hype.",
     "",
     "Official brief (source of truth):",
-    tsblPromptBlock(lang),
+    tsblAskBrief(),
     "",
     "Do not cite LATAM/TSBL 1v1 phase, tryout, or glad rules. Those are not TSBCC.",
   ].join("\n");
@@ -178,7 +182,14 @@ async function askTsbl(input) {
       message:
         lang === "es"
           ? "Pregunta algo de TSBCC, ej. `'ask cooldown de retos`"
-          : "Ask something about TSBCC, e.g. `'ask challenge cooldown`",
+          : "Ask something about TSBCC, e.g. `'ask can I dodge a war`",
+    };
+  }
+
+  if (/^(hi|hey|hello|yo|sup|hola|howdy)\b/i.test(q) && q.split(/\s+/).length <= 3) {
+    return {
+      ok: true,
+      answer: "Ask a TSBCC rules question — try `'ask war range` or `'rules`.",
     };
   }
 
@@ -203,16 +214,28 @@ async function askTsbl(input) {
     "Then answer (or the short refusal) in the reply language.",
   ].join("\n");
 
-  const text = process.env.GEMINI_API_KEY
-    ? await callGemini({
-        prompt: `${system}\n\n---\n\n${user}`,
-        temperature: 0.15,
-      })
-    : await callOpenAI({
-        prompt: user,
-        system,
-        temperature: 0.15,
-      });
+  let text;
+  try {
+    text = process.env.GEMINI_API_KEY
+      ? await callGemini({
+          prompt: `${system}\n\n---\n\n${user}`,
+          temperature: 0.15,
+        })
+      : await callOpenAI({
+          prompt: user,
+          system,
+          temperature: 0.15,
+        });
+  } catch (err) {
+    if (String(err?.message) === "ASK_BLOCKED") {
+      return {
+        ok: false,
+        code: "blocked",
+        message: "Couldn't answer that. Try a specific TSBCC rules question, e.g. `'ask war range`.",
+      };
+    }
+    throw err;
+  }
 
   const cleaned = String(text || "").trim();
   if (!cleaned) {
