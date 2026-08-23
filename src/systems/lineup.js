@@ -48,7 +48,17 @@ function updateConfig(guildId, patch) {
   let next = null;
   store.updateSync((db) => {
     const current = db[guildId] || defaultConfig(guildId);
-    next = { ...current, ...patch, guildId };
+    const safePatch = { ...(patch || {}) };
+    if (
+      safePatch.regions &&
+      typeof safePatch.regions === "object" &&
+      !Object.keys(safePatch.regions).length &&
+      current.regions &&
+      Object.keys(current.regions).length
+    ) {
+      delete safePatch.regions;
+    }
+    next = { ...current, ...safePatch, guildId };
     db[guildId] = next;
     return db;
   });
