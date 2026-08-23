@@ -34,6 +34,21 @@ OPENAI_API_KEY=sk-...
 ```
 (Only used if `GEMINI_API_KEY` is empty.)
 
+## `'ask` chat (Groq)
+
+`'ask` does **not** use Gemini (Google blocks the full TSBCC rule text). Use Groq instead:
+
+1. Open https://console.groq.com/keys
+2. Create an API key
+3. On the **API** Railway service:
+
+```
+GROQ_API_KEY=gsk_...
+GROQ_ASK_MODEL=llama-3.3-70b-versatile
+```
+
+`OPENAI_API_KEY` is used for `'ask` only if Groq is missing.
+
 ## Adding more “training”
 
 Edit `src/coach/knowledge.js` — add fundamentals, character routes, and mistakes you care about.

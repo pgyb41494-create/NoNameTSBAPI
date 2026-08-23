@@ -117,7 +117,7 @@ const EN = {
     ],
   },
   coachHints: [
-    "Answer from TSBCC community rules only: about TSBCC, blacklist, bail, clan verification, war rights, FAQ, and official links.",
+    "For TSBCC rule questions, answer from this brief only: about TSBCC, blacklist, bail, clan verification, war rights, FAQ, and official links.",
     "Do not use old LATAM/TSBL 1v1 phase, tryout, or glad rules — those are not TSBCC rules.",
     "Blacklist is TSBCC-wide. Bail is optional and staff-discretion only.",
     "Clan verify: 100 members per region, must be the yellow-crown server owner.",
@@ -179,57 +179,11 @@ function tsblPromptBlock() {
   return lines.join("\n");
 }
 
-/** Compact brief for Gemini — avoids wording that trips provider safety filters. */
-function tsblAskBrief() {
-  return [
-    "TSBCC = The Strongest Battlegrounds Clanning Community (fan-made, not official Yielding Arts).",
-    "300+ registered clans. Founded 7/11/2023 by Karma. Managed by opkillermc.",
-    "Vanity: https://discord.gg/tsbcc",
-    "Roblox group: https://www.roblox.com/share/g/415578052",
-    "War management invite: https://discord.gg/MVr4eYzThG",
-    "",
-    "Always follow Discord ToS. Use common sense; not every case is listed.",
-    "",
-    "Blacklist is community-wide. Categories (all treated seriously, including 'jokes'):",
-    "- leaking or threatening private info",
-    "- destroying/nuking a server",
-    "- stuffing clans with fake/alt accounts on purpose",
-    "- ToS-prohibited sexual content (including any 'jokes' about it)",
-    "- graphic violent media",
-    "- praising extremist ideology or imagery",
-    "- solo raiding (clan raid = clan strike; solo = personal blacklist)",
-    "- adult media anywhere, including DMs",
-    "- scamming TSBCC-related Robux/money/trainings",
-    "- long-term targeting/harassment (a single insult is not enough)",
-    "- heavy religious insult",
-    "- defamation without proof (faking scores is NOT this)",
-    "- exploiting, tabbing, illegal Fast Flags (visual flags only are allowed)",
-    "- faking evidence to get someone banned",
-    "- sheltering banned users after 24 hours once the clan is striked",
-    "- hate/slurs Discord ToS forbids",
-    "- alting in TSBCC (clans, sets, etc.)",
-    "- letting someone else play your account in wars/sets",
-    "- helping/boosting/staffing banned clans or helping their in-game raids",
-    "- racist or xenophobic comments",
-    "- advertising an unapproved branch (ask a co-owner+ first)",
-    "",
-    "Bail: optional paid unblacklist, staff discretion only, guided by owner/co-owner.",
-    "Clan verify: 100 members per region; must be the yellow-crown server owner (admin is not enough). Do not ping staff. Ownership claims go through a ticket; do not invite the bot for that.",
-    "Wars: range 10 outside top 10, range 2 inside top 10. Must be #11 to challenge #10, #2 to challenge #1.",
-    "Under top 10: 2 days to answer in war management, then auto if they dodge; schedule within 2 days unless both agree later.",
-    "Above top 10: same but the window is 1 week.",
-    "FAQ: dodge only if the other war starts within a day; cannot challenge top 10 until the board updates after beating #11; ref no-show = reschedule or void; winning one of two queued wars does not let you dodge the other.",
-    "Loop-holing rules is punishable. Direct leftover questions to war managers or tickets.",
-    "If it is not in this brief, say it is not listed. Do not invent rules.",
-  ].join("\n");
-}
-
 module.exports = {
   TSBL,
   TSBL_ES: EN,
   TSBL_EN: EN,
   tsblPromptBlock,
-  tsblAskBrief,
   tsblSectionKeys,
   tsblSection,
   tsblPack,
