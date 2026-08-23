@@ -127,7 +127,7 @@ async function callGroq({ prompt, system, temperature = 0.6 }) {
       Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model: process.env.GROQ_ASK_MODEL || "llama-3.3-70b-versatile",
+      model: resolveGroqModel(),
       temperature,
       messages: [
         { role: "system", content: system },
@@ -145,6 +145,22 @@ async function callAskModel({ prompt, system, temperature = 0.6 }) {
     return callGroq({ prompt, system, temperature });
   }
   return callOpenAI({ prompt, system, temperature });
+}
+
+const DEAD_GROQ_MODELS = new Set([
+  "llama-3.3-70b-versatile",
+  "llama-3.3-70b-specdec",
+  "llama-3.1-8b-instant",
+  "llama-3.1-70b-versatile",
+  "llama3-70b-8192",
+  "llama3-8b-8192",
+  "mixtral-8x7b-32768",
+]);
+
+function resolveGroqModel() {
+  const raw = String(process.env.GROQ_ASK_MODEL || "openai/gpt-oss-120b").trim();
+  if (!raw || DEAD_GROQ_MODELS.has(raw)) return "openai/gpt-oss-120b";
+  return raw;
 }
 
 function parseVerdict(text) {

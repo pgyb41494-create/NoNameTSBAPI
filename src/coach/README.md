@@ -44,7 +44,7 @@ OPENAI_API_KEY=sk-...
 
 ```
 GROQ_API_KEY=gsk_...
-GROQ_ASK_MODEL=llama-3.3-70b-versatile
+GROQ_ASK_MODEL=openai/gpt-oss-120b
 ```
 
 `OPENAI_API_KEY` is used for `'ask` only if Groq is missing.
