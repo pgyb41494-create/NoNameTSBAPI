@@ -216,6 +216,9 @@ function createApp() {
     notifyBoardRefresh(req.params.guildId, req.body.userId);
     res.json(result);
   });
+  bot.post("/leaderboard/:guildId/ensure-slots", (req, res) => {
+    res.json(leaderboard.ensureSlots(req.params.guildId, Number(req.body.count)));
+  });
 
   bot.get("/lineup/:guildId", (req, res) => res.json(lineup.getConfig(req.params.guildId)));
   bot.post("/lineup/:guildId", (req, res) => res.json(lineup.updateConfig(req.params.guildId, req.body || {})));
