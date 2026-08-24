@@ -35,6 +35,7 @@ function defaultConfig(guildId) {
       panelMessageId: "",
       spotsAhead: 3,
       ranges: [],
+      supportRoleIds: [],
     },
   };
 }
