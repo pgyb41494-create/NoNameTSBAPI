@@ -9,10 +9,6 @@ const CHARACTERS = [
   "Martial Artist",
   "Tech Prodigy",
   "Undying Hero",
-  "KJ",
-  "Sorcerer",
-  "The Frozen Soul",
-  "Crab Boss",
 ];
 
 const LEGACY_CHARACTER_NAMES = {
