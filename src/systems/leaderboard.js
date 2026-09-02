@@ -33,6 +33,7 @@ function defaultConfig(guildId) {
       channelId: "",
       categoryId: "",
       panelMessageId: "",
+      auditLogChannelId: "",
       spotsAhead: 3,
       ranges: [],
       supportRoleIds: [],
