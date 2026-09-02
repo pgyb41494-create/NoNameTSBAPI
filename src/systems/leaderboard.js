@@ -38,6 +38,7 @@ function defaultConfig(guildId) {
       ranges: [],
       supportRoleIds: [],
     },
+    topBoardRoles: [],
   };
 }
 
