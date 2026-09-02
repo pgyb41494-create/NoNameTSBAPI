@@ -208,6 +208,9 @@ function createApp() {
   bot.get("/profiles/lookup/:guildId", (req, res) => {
     res.json(profiles.findByRoblox(req.params.guildId, req.query.q) || null);
   });
+  bot.get("/profiles/search/:guildId", (req, res) => {
+    res.json(profiles.searchProfiles(req.params.guildId, req.query.q, Number(req.query.limit) || 25));
+  });
 
   bot.get("/leaderboard/:guildId", (req, res) => res.json(leaderboard.getConfig(req.params.guildId)));
   bot.post("/leaderboard/:guildId", (req, res) => res.json(leaderboard.updateConfig(req.params.guildId, req.body || {})));

@@ -1,5 +1,5 @@
 const { createJsonStore } = require("../store/jsonStore");
-const { resolveRobloxUser, checkRobloxBio } = require("../lib/roblox");
+const { resolveRobloxUser, checkRobloxBio, parseRobloxInput } = require("../lib/roblox");
 const { getCharacterLabel } = require("../lib/characters");
 const { regionLabel } = require("../lib/regions");
 
@@ -115,22 +115,94 @@ function getProfile(guildId, discordId) {
   );
 }
 
-function findByRoblox(guildId, query) {
-  const q = String(query || "").trim().toLowerCase();
-  if (!q) return null;
-  const list = allProfiles().filter((p) => !guildId || p.guild_id === guildId || !p.guild_id);
-  const code = q.replace(/[^a-z0-9]/gi, "").toUpperCase();
-  return (
-    (isLetterCode(code) && list.find((p) => String(p.profile_id || "").toUpperCase() === code)) ||
-    list.find((p) => String(p.roblox_username || "").toLowerCase() === q) ||
-    list.find((p) => String(p.roblox_display_name || "").toLowerCase() === q) ||
-    list.find((p) => String(p.roblox_id || "") === q) ||
-    list.find((p) => String(p.profile_id || "").toLowerCase() === q)
-  );
-}
-
 function profilesForGuild(guildId) {
   return allProfiles().filter((p) => !guildId || p.guild_id === guildId || !p.guild_id);
+}
+
+function findByRoblox(guildId, query) {
+  const raw = String(query || "").trim();
+  if (!raw) return null;
+  const list = profilesForGuild(guildId);
+  const parsed = parseRobloxInput(raw);
+  const usernameQ = String(
+    parsed?.type === "username" ? parsed.value : raw.replace(/^@/, "")
+  )
+    .trim()
+    .toLowerCase();
+  const idQ = parsed?.type === "id" ? String(parsed.value) : null;
+  const code = usernameQ.replace(/[^a-z0-9]/gi, "").toUpperCase();
+
+  if (isLetterCode(code)) {
+    const byCode = list.find((p) => String(p.profile_id || "").toUpperCase() === code);
+    if (byCode) return byCode;
+  }
+  if (idQ) {
+    const byId = list.find((p) => String(p.roblox_id || "") === idQ);
+    if (byId) return byId;
+  }
+
+  const exactUser = list.find((p) => String(p.roblox_username || "").toLowerCase() === usernameQ);
+  if (exactUser) return exactUser;
+  const exactDisplay = list.find(
+    (p) => String(p.roblox_display_name || "").toLowerCase() === usernameQ
+  );
+  if (exactDisplay) return exactDisplay;
+  const exactCode = list.find((p) => String(p.profile_id || "").toLowerCase() === usernameQ);
+  if (exactCode) return exactCode;
+
+  if (usernameQ.length < 2) return null;
+
+  const starts = list.filter((p) =>
+    String(p.roblox_username || "").toLowerCase().startsWith(usernameQ)
+  );
+  if (starts.length === 1) return starts[0];
+
+  const partial = list.filter((p) => {
+    const u = String(p.roblox_username || "").toLowerCase();
+    const d = String(p.roblox_display_name || "").toLowerCase();
+    return (u && u.includes(usernameQ)) || (d && d.includes(usernameQ));
+  });
+  if (partial.length === 1) return partial[0];
+  return null;
+}
+
+/** Ranked matches for slash autocomplete / ambiguous lookups. */
+function searchProfiles(guildId, query, limit = 25) {
+  const raw = String(query || "").trim();
+  const list = profilesForGuild(guildId).filter((p) => p.roblox_username || p.profile_id);
+  const max = Math.max(1, Math.min(25, Number(limit) || 25));
+  if (!raw) return list.slice(0, max);
+
+  const parsed = parseRobloxInput(raw);
+  const q = String(parsed?.type === "username" ? parsed.value : raw.replace(/^@/, ""))
+    .trim()
+    .toLowerCase();
+  const idQ = parsed?.type === "id" ? String(parsed.value) : null;
+  const scored = [];
+
+  for (const p of list) {
+    const u = String(p.roblox_username || "").toLowerCase();
+    const d = String(p.roblox_display_name || "").toLowerCase();
+    const code = String(p.profile_id || "").toLowerCase();
+    const rid = String(p.roblox_id || "");
+    let score = 0;
+    if (idQ && rid === idQ) score = 100;
+    else if (u === q) score = 95;
+    else if (rid === q) score = 90;
+    else if (code === q) score = 85;
+    else if (u.startsWith(q)) score = 80;
+    else if (d === q) score = 75;
+    else if (d.startsWith(q)) score = 65;
+    else if (code.startsWith(q)) score = 55;
+    else if (u.includes(q)) score = 50;
+    else if (d.includes(q)) score = 40;
+    if (score) scored.push({ p, score });
+  }
+
+  return scored
+    .sort((a, b) => b.score - a.score || String(a.p.roblox_username || "").localeCompare(String(b.p.roblox_username || "")))
+    .slice(0, max)
+    .map((row) => row.p);
 }
 
 function findDuplicateRoblox(guildId, robloxId, excludeDiscordId = null) {
@@ -237,6 +309,7 @@ module.exports = {
   store,
   getProfile,
   findByRoblox,
+  searchProfiles,
   findDuplicateRoblox,
   listDuplicateRobloxGroups,
   listNetworkDuplicateGroups,
