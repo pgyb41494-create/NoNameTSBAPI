@@ -4,12 +4,13 @@ const { parseStage } = require("../lib/stages");
 const store = createJsonStore("ranking.json", {});
 
 function normalizeCommandName(value) {
-  return String(value || "stage")
+  if (value == null || value === "") return "";
+  return String(value)
     .replace(/^[-/>!.]+/, "")
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, "")
-    .slice(0, 32) || "stage";
+    .slice(0, 32);
 }
 
 function defaultConfig(guildId) {
