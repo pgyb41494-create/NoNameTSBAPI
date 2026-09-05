@@ -604,6 +604,85 @@ function mountStaff(app) {
     }
   });
 
+  r.get("/:guildId/embeds", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.listEmbeds(req.params.guildId));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.get("/:guildId/embeds/:name", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.getEmbed(req.params.guildId, req.params.name));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.post("/:guildId/embeds", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.createEmbed(req.params.guildId, req.body || {}));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.put("/:guildId/embeds/:name", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.updateEmbed(req.params.guildId, req.params.name, req.body || {}));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.delete("/:guildId/embeds/:name", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.deleteEmbed(req.params.guildId, req.params.name));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.post("/:guildId/embeds/:name/send", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      const channelId = String(req.body?.channelId || req.body?.channel || "").trim();
+      if (!channelId) return res.status(400).json({ error: "channelId is required" });
+      res.json(await bridge.sendEmbed(req.params.guildId, req.params.name, channelId));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
+  r.post("/:guildId/embeds/:name/refresh", async (req, res) => {
+    try {
+      if (!(await canConfigureGuild(req.user, req.params.guildId))) {
+        return res.status(403).json({ error: "You cannot configure that server." });
+      }
+      res.json(await bridge.refreshEmbed(req.params.guildId, req.params.name));
+    } catch (err) {
+      fail(res, err);
+    }
+  });
+
   r.get("/:guildId/members", requireStaff, async (req, res) => {
     try {
       res.json({ members: await bridge.searchMembers(req.params.guildId, req.query.q || "") });

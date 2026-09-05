@@ -389,6 +389,45 @@ async function replacePanels(guildId, body) {
   return remoteDiscord(`/discord/guilds/${guildId}/panels`, { method: "PUT", body: body || {} });
 }
 
+async function listEmbeds(guildId) {
+  return remoteDiscord(`/discord/guilds/${guildId}/embeds`);
+}
+
+async function getEmbed(guildId, name) {
+  return remoteDiscord(`/discord/guilds/${guildId}/embeds/${encodeURIComponent(name)}`);
+}
+
+async function createEmbed(guildId, body) {
+  return remoteDiscord(`/discord/guilds/${guildId}/embeds`, { method: "POST", body: body || {} });
+}
+
+async function updateEmbed(guildId, name, body) {
+  return remoteDiscord(`/discord/guilds/${guildId}/embeds/${encodeURIComponent(name)}`, {
+    method: "PUT",
+    body: body || {},
+  });
+}
+
+async function deleteEmbed(guildId, name) {
+  return remoteDiscord(`/discord/guilds/${guildId}/embeds/${encodeURIComponent(name)}`, {
+    method: "DELETE",
+  });
+}
+
+async function sendEmbed(guildId, name, channelId) {
+  return remoteDiscord(`/discord/guilds/${guildId}/embeds/${encodeURIComponent(name)}/send`, {
+    method: "POST",
+    body: { channelId },
+  });
+}
+
+async function refreshEmbed(guildId, name) {
+  return remoteDiscord(`/discord/guilds/${guildId}/embeds/${encodeURIComponent(name)}/refresh`, {
+    method: "POST",
+    body: {},
+  });
+}
+
 async function postStaffAlert(guildId, event, payload = {}) {
   return remoteDiscord(`/discord/guilds/${guildId}/alerts/post`, {
     method: "POST",
@@ -449,6 +488,13 @@ module.exports = {
   setInvitesConfig,
   listPanels,
   replacePanels,
+  listEmbeds,
+  getEmbed,
+  createEmbed,
+  updateEmbed,
+  deleteEmbed,
+  sendEmbed,
+  refreshEmbed,
   createChannel,
   refreshBoards,
   refreshBoardsBackground,
