@@ -1,3 +1,5 @@
+const site = String(process.env.WEBSITE_URL || "https://no-name-tsb-website.vercel.app").replace(/\/$/, "");
+
 const brand = {
   name: process.env.BOT_NAME || "Ascendant",
   prefix: process.env.BOT_PREFIX || "'",
@@ -6,7 +8,9 @@ const brand = {
   success: 0x57f287,
   warn: 0xfee75c,
   danger: 0xed4245,
-  website: process.env.WEBSITE_URL || "http://localhost:5173",
+  website: site,
+  thumbnail: process.env.BOT_THUMBNAIL || `${site}/icon.jpg`,
+  banner: process.env.BOT_BANNER || `${site}/bg-home.png`,
   defaultGif:
     process.env.DEFAULT_CARD_GIF ||
     "https://developers.oneway.lat/evidencias/asa_3_1.gif",
