@@ -10,7 +10,9 @@ const brand = {
   danger: 0xed4245,
   website: site,
   thumbnail: process.env.BOT_THUMBNAIL || `${site}/icon.jpg`,
-  banner: process.env.BOT_BANNER || `${site}/bg-home.png`,
+  banner:
+    process.env.BOT_BANNER ||
+    "https://cdn.discordapp.com/banners/1537642166627729478/8fc066b313aa999e1a43fc3ef45d2b12.webp?size=4096",
   defaultGif:
     process.env.DEFAULT_CARD_GIF ||
     "https://developers.oneway.lat/evidencias/asa_3_1.gif",
