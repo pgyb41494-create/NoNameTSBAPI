@@ -414,10 +414,13 @@ async function deleteEmbed(guildId, name) {
   });
 }
 
-async function sendEmbed(guildId, name, channelId) {
+async function sendEmbed(guildId, name, channelId, options = {}) {
   return remoteDiscord(`/discord/guilds/${guildId}/embeds/${encodeURIComponent(name)}/send`, {
     method: "POST",
-    body: { channelId },
+    body: {
+      channelId: channelId || undefined,
+      webhookUrl: options.webhookUrl || undefined,
+    },
   });
 }
 

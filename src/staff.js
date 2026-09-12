@@ -593,12 +593,20 @@ function mountStaff(app) {
         return res.status(403).json({ error: "You cannot configure that server." });
       }
       const channelId = String(req.body?.channelId || req.body?.channel || "").trim();
-      if (!channelId) return res.status(400).json({ error: "channelId is required" });
+      const webhookUrl = String(req.body?.webhookUrl || req.body?.webhook || "").trim();
+      if (!channelId && !webhookUrl) {
+        return res.status(400).json({ error: "Pick a channel or save a webhook URL first." });
+      }
       const panel = panels.get(req.params.guildId, req.params.panelKey);
       if (!panel) return res.status(404).json({ error: "Panel not found" });
       const payload = panels.buildDiscordPayload(req.params.guildId, panel, panel.key);
-      const sent = await bridge.sendChannelMessage(req.params.guildId, channelId, payload);
-      res.json({ ok: true, sent });
+      if (channelId) {
+        const sent = await bridge.sendChannelMessage(req.params.guildId, channelId, payload);
+        return res.json({ ok: true, via: "bot", sent });
+      }
+      const { postDiscordWebhook } = require("./lib/discordWebhook");
+      const sent = await postDiscordWebhook(webhookUrl, payload);
+      res.json({ ok: true, via: "webhook", sent });
     } catch (err) {
       fail(res, err);
     }
@@ -665,8 +673,13 @@ function mountStaff(app) {
         return res.status(403).json({ error: "You cannot configure that server." });
       }
       const channelId = String(req.body?.channelId || req.body?.channel || "").trim();
-      if (!channelId) return res.status(400).json({ error: "channelId is required" });
-      res.json(await bridge.sendEmbed(req.params.guildId, req.params.name, channelId));
+      const webhookUrl = String(req.body?.webhookUrl || req.body?.webhook || "").trim();
+      if (!channelId && !webhookUrl) {
+        return res.status(400).json({ error: "Pick a channel or save a webhook URL first." });
+      }
+      res.json(
+        await bridge.sendEmbed(req.params.guildId, req.params.name, channelId, { webhookUrl })
+      );
     } catch (err) {
       fail(res, err);
     }
