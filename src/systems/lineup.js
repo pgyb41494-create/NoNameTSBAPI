@@ -33,6 +33,7 @@ function defaultConfig(guildId) {
     slotsPerRegion: 10,
     subSlotsPerRegion: 10,
     separateSubChannels: false,
+    theme: "classic",
     allowedRoles: [],
     enabledRegionKeys: ["na", "east", "west", "central", "eu", "asia"],
     regions,
