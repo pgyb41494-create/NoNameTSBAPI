@@ -453,7 +453,7 @@ async function setStaffAlertsConfig(guildId, body) {
 }
 
 async function refreshBoards(guildId, userId) {
-  const body = userId ? { userId: String(userId) } : {};
+  const body = userId ? { userId: String(userId), force: true } : { force: true };
   return remoteDiscord(`/discord/guilds/${guildId}/boards/refresh`, { method: "POST", body });
 }
 
