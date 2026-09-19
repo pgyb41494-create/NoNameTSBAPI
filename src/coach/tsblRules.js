@@ -106,6 +106,38 @@ const EN = {
       "Loop holing in the rules results in punishments. Questions go to war managers or the ticket system.",
     ],
   },
+  gladiators: {
+    title: "5v5 Gladiators · Challenging & Players",
+    items: [
+      "Within **5v5 Gladiators**, the following rules must be applied — otherwise the 5v5 will not count and may result in a win for the other side.",
+      "⇥ **CHALLENGING**\n·····································\n⤷ A clan cannot dodge for more than **1 week**.\n⤷ If the spot is for **Top 1 EU**, and between **Top 2 and Top 3**, then both the challenging clan and the challenged clan may have a region of their choice to split the 5v5 in.",
+      "⇥ **PLAYERS**\n·····································\n⤷ If clans are unable to meet the deadline to arrive at a 5v5 (**15 minutes**), it is an auto win for the other clan waiting who have all their players there.\n⤷ 5v5s can be **7v7, 6v6, or 4v4** depending on what both clans want — they can decide and choose, preferably stick to a 5v5 though.\n⤷ **Clanless** people are not allowed to represent the clan in the 5v5.\n⤷ **Subs** are allowed — **3 maximum** per team.\n⤷ **No allies** allowed to represent the clan in their 5v5.\n⤷ **No alt accounts** allowed without a valid reason and proof.",
+    ],
+  },
+  gladiators2: {
+    title: "5v5 Gladiators · In-match",
+    items: [
+      "⇥ **WITHIN 5V5S**\n·····································\n⤷ **Garou, Saitama, and Metal Bat ONLY** — no other characters allowed in 5v5s.\n⤷ No tab glitching.\n⤷ No awakenings allowed whatsoever (they will already be disabled).\n⤷ No using trashcans.\n⤷ Don’t take the piss with being passive — you can be passive, but no running from your opponent the whole match.\n⤷ Dead players cannot come back on until the next match and must remain off the arena until the round is over.\n⤷ Players spectating or dead players cannot fight while the 5v5 is going on.\n⤷ **1 spectator** for each clan, and **1 referee**.\n⤷ If anyone from either side sabotages the 5v5, they must be disqualified and it results in **1 round won** for whichever team suffered.\n⤷ If a player is AFK while the 5v5 is going on and in their lineup, they must be replaced — otherwise it is an auto round win.\n⤷ **M1 reset is NOT allowed**.\n⤷ **8 tile backdash** or any larger space-covering backdash cancels are not allowed except the regular one.\n⤷ No external software allowed (Clumsy, etc.) that affects hitboxes or physics similar to FFlags.\n⤷ **Sneaking** is not allowed (e.g. jumping someone as soon as their finisher ends unfairly).",
+    ],
+  },
+  borders: {
+    title: "5v5 Gladiators · Borders",
+    items: [
+      "⇥ **BORDERS**\n·····································\n⤷ Must be fighting within the **red lines/borders**.\n⤷ If you are hit by a move outside the red lines/borders, you must go back and fight within them.\n⤷ No camping right beside the red borders.\n⤷ Can’t purposefully push people out of the red border.\n⤷ Going out the **black border** means you are **disqualified**.",
+      "See the diagram attached — **red** = fight zone, **black** = DQ line.",
+    ],
+    image: "gladiator-borders.png",
+  },
+  ocw: {
+    title: "OCW · Regions",
+    items: [
+      "In an **OCW**, if two opposing clans want different regions and won’t agree on one, they must either:",
+      "⤷ Agree on a **central server**, **or**",
+      "⤷ Split the war into **both** of the servers they want (e.g. Singapore and India).",
+      "Default set is **FT 3** when doing both regions, but clans can agree on different numbers — same as wars on a single server.",
+      "This only applies to servers that are part of an entire region (**Asia, OCE, NA, SA, EU**).",
+    ],
+  },
   faq: {
     title: "FAQ",
     items: [
@@ -117,8 +149,11 @@ const EN = {
     ],
   },
   coachHints: [
-    "For TSBCC rule questions, answer from this brief only: about TSBCC, blacklist, bail, clan verification, war rights, FAQ, and official links.",
-    "Do not use old LATAM/TSBL 1v1 phase, tryout, or glad rules — those are not TSBCC rules.",
+    "For TSBCC rule questions, answer from this brief only: about TSBCC, blacklist, bail, clan verification, war rights, 5v5 Gladiators, borders, OCW regions, FAQ, and official links.",
+    "5v5 Gladiators: Garou / Saitama / Metal Bat only; no awakenings, trashcans, tab glitch, M1 reset, 8-tile+ backdash cancels, external softwares, or sneaking.",
+    "5v5 arrival deadline is 15 minutes. Max 3 subs. No clanless, allies, or unjustified alts.",
+    "Borders: fight inside red; black border = DQ. See borders section diagram.",
+    "OCW region deadlock: agree on a central server or split both wanted servers (default FT 3). Only for servers within Asia / OCE / NA / SA / EU.",
     "Blacklist is TSBCC-wide. Bail is optional and staff-discretion only.",
     "Clan verify: 100 members per region, must be the yellow-crown server owner.",
     "Wars: range 10 outside top 10, range 2 inside top 10. Under top 10 = 2 days; above top 10 = 1 week.",
@@ -134,7 +169,21 @@ const EN = {
 };
 
 const PACKS = { es: EN, en: EN };
-const SECTION_KEYS = ["overview", "about", "blacklist", "blacklist2", "bail", "verification", "wars", "faq", "links"];
+const SECTION_KEYS = [
+  "overview",
+  "about",
+  "blacklist",
+  "blacklist2",
+  "bail",
+  "verification",
+  "wars",
+  "gladiators",
+  "gladiators2",
+  "borders",
+  "ocw",
+  "faq",
+  "links",
+];
 
 function normalizeLang(raw) {
   const t = String(raw || "").toLowerCase();
