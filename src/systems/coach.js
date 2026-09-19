@@ -232,22 +232,27 @@ function formatRulesSectionAnswer(key, lang = "en") {
         ? ["blacklist", "blacklist2"]
         : [key];
 
-  const chunks = [];
+  const embeds = [];
   for (const k of packKeys) {
     if (!tsblSectionKeys().includes(k) && k !== "blacklist2") continue;
     const section = tsblSection(k, lang);
     if (!section?.items?.length) continue;
-    chunks.push(`**${TSBL.name} · ${section.title}**`, "", ...section.items.map((item) => `• ${item}`), "");
+    let description = section.items.join("\n\n").slice(0, 3900);
+    if (k === "borders") {
+      description += "\n\n_Border diagram: `'rules borders` / `/rules` → 5v5 Borders._";
+    }
+    embeds.push({
+      title: `${TSBL.name} · ${section.title}`.slice(0, 256),
+      description,
+    });
   }
-  if (!chunks.length) return null;
+  if (!embeds.length) return null;
 
-  let body = chunks.join("\n").trim();
-  if (key === "borders" || key === "gladiators_pack") {
-    body += "\n\n_Border diagram: use `'rules borders` or `/rules` → 5v5 Borders._";
-  }
-  body += "\n\n_More sections: `'rules` / `/rules`._";
-  if (body.length > 1900) body = `${body.slice(0, 1890)}…\n\n_Use \`'rules\` for the full section._`;
-  return body;
+  const last = embeds[embeds.length - 1];
+  const tip = "\n\n_More: `'rules` / `/rules`._";
+  if ((last.description + tip).length <= 4090) last.description += tip;
+
+  return { embeds, answer: embeds.map((e) => `**${e.title}**\n${e.description}`).join("\n\n") };
 }
 
 async function askTsbl(input) {
@@ -277,7 +282,9 @@ async function askTsbl(input) {
   const rulesKey = matchAskRulesSection(q);
   if (rulesKey) {
     const canned = formatRulesSectionAnswer(rulesKey, lang);
-    if (canned) return { ok: true, answer: canned, source: "rules" };
+    if (canned?.embeds?.length) {
+      return { ok: true, source: "rules", embeds: canned.embeds, answer: canned.answer };
+    }
   }
 
   if (!hasAskKey()) {
